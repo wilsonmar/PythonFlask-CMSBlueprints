@@ -1,0 +1,24 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+<div class="card main">
+  <header class="card-header">
+    <p class="card-header-title">{{ title }}</p>
+  </header>
+  <div class="card-content">
+    <div class="content">
+      <table class="table is-striped">
+        <tbody>
+          {% for item in settings %}
+            <tr>
+              <td>{{ item.key }}</td>
+              <td>{{ item.value }}</td>
+              <td><a class="button is-small is-primary is-pulled-right" href="#">Edit</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
