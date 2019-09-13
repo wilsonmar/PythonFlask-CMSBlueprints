@@ -1,0 +1,47 @@
+{% extends 'admin/layout.html' %}
+
+{% block content %}
+<div class="card edit">
+  <header class="card-header">
+    <p class="card-header-title">{{ title }} User</p>
+  </header>
+  <div class="card-content">
+    <div class="content">
+      <form method="post">
+        <div class="field">
+          <label class="label">First Name</label>
+          <div class="control">
+            <input name="firstname" class="input" type="text" value="">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Last Name</label>
+          <div class="control">
+            <input name="lastname" class="input" type="text" value="">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Username</label>
+          <div class="control">
+            <input name="username" class="input" type="text" value="">
+          </div>
+        </div>
+        <div class="field">
+          <label class="label">Email</label>
+          <div class="control">
+            <input name="email" class="input" type="text" value="">
+          </div>
+        </div>
+        <div class="field is-grouped">
+          <div class="control">
+            <input type="submit" class="button is-link" value="Submit">
+          </div>
+          <div class="control">
+            <a class="button is-text">Cancel</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
