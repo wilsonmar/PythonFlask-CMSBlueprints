@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}/{}'.format(app.root_path, 'content.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 db = SQLAlchemy(app)
 
 class Type(db.Model):
@@ -45,9 +46,7 @@ def requested_type(type):
     types = [row.name for row in Type.query.all()]
     return True if type in types else False
 
-homepage = Setting.query.filter(Setting.key == 'homepage').first().value
-
-@app.route('/', defaults = {'slug': homepage})
+@app.route('/', defaults = {'slug': 'home'})
 @app.route('/<slug>')
 def index(slug):
     titles = Content.query.with_entities(Content.slug, Content.title).join(Type).filter(Type.name == 'page')
@@ -76,68 +75,8 @@ def settings():
 @app.route('/admin/create/<type>', methods=('GET', 'POST'))
 def create(type):
     if requested_type(type):
-        if request.method == "POST":
-            title = request.form["title"]
-            slug = request.form["slug"]
-            type_id = request.form["type_id"]
-            body = request.form["body"]
-            error = None
-
-            if not title:
-                error = 'The title is required.'
-            elif not type:
-                error = 'The type is required.'
-
-            if error is None:
-                content = Content(title=title, slug=slug, type_id=type_id, body=body)
-                db.session.add(content)
-                db.session.commit()
-                return redirect(url_for('content', type=type))
-
-            flash(error)
-
         types = Type.query.all()
         return render_template('admin/content_form.html', title='Create', types=types, type_name=type)
-    elif type == 'user':
-        if request.method == "POST":
-            firstname = request.form["firstname"]
-            lastname = request.form["lastname"]
-            username = request.form["username"]
-            email = request.form["email"]
-            error = None
-
-            if not username:
-                error = 'username is required.'
-
-            if error is None:
-                user = User(firstname=firstname, lastname=lastname, username=username, email=email)
-                db.session.add(user)
-                db.session.commit()
-                return redirect(url_for('users'))
-
-            flash(error)
-
-        return render_template('admin/user_form.html')
-    elif type == 'setting':
-        if request.method == "POST":
-            key = request.form["key"]
-            value = request.form["value"]
-            error = None
-
-            if not key:
-                error = 'Key is required.'
-            if not value:
-                error = 'Value is required.'
-
-            if error is None:
-                user = Setting(key=key, value=value)
-                db.session.add(user)
-                db.session.commit()
-                return redirect(url_for('settings'))
-
-            flash(error)
-
-        return render_template('admin/setting_form.html')
     else:
         abort(404)
 
@@ -146,75 +85,10 @@ def edit(id):
     content = Content.query.get_or_404(id)
     type = Type.query.get(request.form["type_id"])
 
-    if request.method == "POST":
-        content.title = request.form["title"]
-        content.slug = request.form["slug"]
-        content.type_id = request.form["type_id"]
-        content.body = request.form["body"]
-        content.updated_at = datetime.utcnow()
-        error = None
-
-        if not request.form["title"]:
-            error = 'The title is required.'
-
-        if error is None:
-            db.session.commit()
-            return redirect(url_for('content', type=type.name))
-
-        flash(error)
-
     types = Type.query.all()
     return render_template('admin/content_form.html',
         types=types, title='Edit', item_title=content.title,
         slug=content.slug, type_name=type.name, type_id=content.type_id, body=content.body)
-
-@app.route('/admin/edit/setting/<id>', methods=('GET', 'POST'))
-def edit_setting(id):
-    setting = Setting.query.get_or_404(id)
-
-    if request.method == "POST":
-        setting.key = request.form["key"]
-        setting.value = request.form["value"]
-        error = None
-
-        if not setting.key:
-            error = 'Key is required.'
-        if not setting.value:
-            error = 'Value is required.'
-
-        if error is None:
-            db.session.commit()
-            return redirect(url_for('settings'))
-
-        flash(error)
-
-    types = Type.query.all()
-    return render_template('admin/setting_form.html', key=setting.key,  value=setting.value)
-
-@app.route('/admin/edit/user/<id>', methods=('GET', 'POST'))
-def edit_user(id):
-    user = User.query.get_or_404(id)
-
-    if request.method == "POST":
-        user.firstname = request.form["firstname"]
-        user.lastname = request.form["lastname"]
-        user.username = request.form["username"]
-        user.email = request.form["email"]
-        error = None
-
-        if not request.form["title"]:
-            error = 'The title is required.'
-
-        if error is None:
-            db.session.commit()
-            return redirect(url_for('settings'))
-
-        flash(error)
-
-    types = Type.query.all()
-    return render_template('admin/user_form.html',
-        title='Edit', firstname=user.firstname,
-        lastname=user.lastname, username=user.username, email=user.email)
 
 if __name__ == "__main__":
     app.run(debug=True)
