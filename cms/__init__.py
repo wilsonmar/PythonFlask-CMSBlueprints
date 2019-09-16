@@ -41,16 +41,16 @@ def pluralize(string, end=None, rep=''):
     else:
         return string + 's'
 
-def requested_type(type):
-    types = [row.name for row in Type.query.all()]
-    return True if type in types else False
-
 @app.route('/', defaults = {'slug': 'home'})
 @app.route('/<slug>')
 def index(slug):
     titles = Content.query.with_entities(Content.slug, Content.title).join(Type).filter(Type.name == 'page')
     content = Content.query.filter(Content.slug == slug).first_or_404()
     return render_template('index.html', titles=titles, content=content)
+
+def requested_type(type):
+    types = [row.name for row in Type.query.all()]
+    return True if type in types else False
 
 @app.route('/admin', defaults = {'type': 'page'})
 @app.route('/admin/<type>')
