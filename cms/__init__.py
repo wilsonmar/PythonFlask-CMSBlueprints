@@ -6,7 +6,6 @@ from flask_sqlalchemy import SQLAlchemy
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}/{}'.format(app.root_path, 'content.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
 db = SQLAlchemy(app)
 
 class Type(db.Model):
@@ -72,23 +71,13 @@ def settings():
     settings = Setting.query.all()
     return render_template('admin/settings.html', title='Settings', settings=settings)
 
-@app.route('/admin/create/<type>', methods=('GET', 'POST'))
+@app.route('/admin/create/<type>', methods=('GET'))
 def create(type):
     if requested_type(type):
         types = Type.query.all()
         return render_template('admin/content_form.html', title='Create', types=types, type_name=type)
     else:
         abort(404)
-
-@app.route('/admin/edit/<id>', methods=('GET', 'POST'))
-def edit(id):
-    content = Content.query.get_or_404(id)
-    type = Type.query.get(request.form["type_id"])
-
-    types = Type.query.all()
-    return render_template('admin/content_form.html',
-        types=types, title='Edit', item_title=content.title,
-        slug=content.slug, type_name=type.name, type_id=content.type_id, body=content.body)
 
 if __name__ == "__main__":
     app.run(debug=True)
