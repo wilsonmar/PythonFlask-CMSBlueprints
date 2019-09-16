@@ -71,7 +71,7 @@ def settings():
     settings = Setting.query.all()
     return render_template('admin/settings.html', title='Settings', settings=settings)
 
-@app.route('/admin/create/<type>', methods=('GET'))
+@app.route('/admin/create/<type>')
 def create(type):
     if requested_type(type):
         types = Type.query.all()
