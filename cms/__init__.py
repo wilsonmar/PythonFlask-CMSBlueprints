@@ -61,6 +61,14 @@ def content(type):
     else:
         abort(404)
 
+@app.route('/admin/create/<type>')
+def create(type):
+    if requested_type(type):
+        types = Type.query.all()
+        return render_template('admin/content_form.html', title='Create', types=types, type_name=type)
+    else:
+        abort(404)
+
 @app.route('/admin/users')
 def users():
     users = User.query.all()
@@ -70,14 +78,6 @@ def users():
 def settings():
     settings = Setting.query.all()
     return render_template('admin/settings.html', title='Settings', settings=settings)
-
-@app.route('/admin/create/<type>')
-def create(type):
-    if requested_type(type):
-        types = Type.query.all()
-        return render_template('admin/content_form.html', title='Create', types=types, type_name=type)
-    else:
-        abort(404)
 
 if __name__ == "__main__":
     app.run(debug=True)
