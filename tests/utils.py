@@ -8,7 +8,7 @@ import parso
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader, exceptions, meta, nodes
 
-env = Environment(loader=PackageLoader('jobs', 'templates'))
+env = Environment(loader=PackageLoader('cms', 'templates'))
 
 def flatten(d, parent_key='', sep='_'):
     items = []
