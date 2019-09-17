@@ -44,12 +44,12 @@ You can preview your work by running `flask run` in the root of your Project. Th
 ## 1.1 - Folder Structure
 
 @pytest.mark.test_folder_structure_module1
-@pytest.mark.test_module_file_module1
+module_file
 
 ## 1.2 - Models File
 
 @pytest.mark.test_models_file_module1
-@pytest.mark.test_import_sqlalchemy_module1
+import_sqlalchemy
 
 ## 1.3 - Move Models
 
@@ -58,7 +58,7 @@ You can preview your work by running `flask run` in the root of your Project. Th
 ## 1.4 - Import Instance & Models
 
 @pytest.mark.test_import_models_module1
-@pytest.mark.test_init_app_module1
+init_app
 
 ## 1.5 - Create a Blueprint
 

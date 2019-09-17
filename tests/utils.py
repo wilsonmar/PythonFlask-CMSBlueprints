@@ -3,6 +3,7 @@ import inspect
 import json
 import os
 import collections
+import parso
 
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader, exceptions, meta, nodes
@@ -141,49 +142,14 @@ def template_functions(name, function_name):
 
     return functions
 
-def show_jobs_for():
-    values = []
-    for node in parsed_content('_macros').find_all(nodes.For):
-        values.append(node.target.name + ':' + node.iter.name)
-
-    for call in parsed_content('_macros').find_all(nodes.Call):
-        if call.node.name == 'show_job' and call.args[0].name == 'job':
-            values.append('show_job:job')
-
-    return values
-
-def employer_for():
-    values = []
-
-    for node in parsed_content('employer').find_all(nodes.For):
-        path = node.target.name
-        if isinstance(node.iter, nodes.Name):
-            path += ':' + node.iter.name
-        elif isinstance(node.iter, nodes.Call):
-            path += ':' + node.iter.node.name + ':' + str(node.iter.args[0].value) + ':' + str(node.iter.args[1].node.name) + ':' + str(node.iter.args[1].arg.value)
-        values.append(path)
-
-    return values
-
-def template_macros(name):
-    macros = []
-    for macro in parsed_content(name).find_all(nodes.Macro):
-        macros.append(macro.name + ':' + macro.args[0].name)
-    return macros
+def source_soup(source):
+    return BeautifulSoup(source, 'html.parser')
 
 def template_block(name):
     blocks = []
     for block in parsed_content(name).find_all(nodes.Block):
         blocks.append(block.name)
     return blocks
-
-def template_macro_soup(name, macro_name):
-    for macro in parsed_content(name).find_all(nodes.Macro):
-        if macro.name == macro_name:
-            html = ''
-            for template_data in macro.find_all(nodes.TemplateData):
-                html += template_data.data
-    return source_soup(html)
 
 def template_data(name):
     html = ''
@@ -195,16 +161,13 @@ def template_variables(name):
     return [item.node.name + ':' + item.arg.value for item in parsed_content(name).find_all(nodes.Getitem)]
 
 def template_exists(name):
-    return os.path.isfile('jobs/templates/' + name + '.html')
+    return os.path.isfile('cms/admin/templates/admin' + name + '.html')
 
 def template_source(name):
     try:
         return env.loader.get_source(env, name + '.html')[0]
     except exceptions.TemplateNotFound:
         return None
-
-def source_soup(source):
-    return BeautifulSoup(source, 'html.parser')
 
 def template_soup(name):
     return BeautifulSoup(template_source(name), 'html.parser')
