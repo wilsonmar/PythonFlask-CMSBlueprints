@@ -41,18 +41,79 @@ You can preview your work by running `flask run` in the root of your Project. Th
 
 # Module 01 - Admin Blueprint
 
-## 1.1 -
+## 1.1 - Folder Structure
 
-@pytest.mark.
+@pytest.mark.test_folder_structure_module1
+@pytest.mark.test_module_file_module1
 
-# Module 02 - 
+## 1.2 - Models File
 
-## 2.1 -
+@pytest.mark.test_models_file_module1
+@pytest.mark.test_import_sqlalchemy_module1
 
-@pytest.mark.
+## 1.3 - Move Models
 
-# Module 03 - 
+@pytest.mark.test_move_models_module1
 
-## 3.1 -
+## 1.4 - Import Instance & Models
 
-@pytest.mark.
+@pytest.mark.test_import_models_module1
+@pytest.mark.test_init_app_module1
+
+## 1.5 - Create a Blueprint
+
+@pytest.mark.test_create_blueprint_module1
+
+## 1.6 - Move Routes
+
+@pytest.mark.test_move_routes_module1
+
+## 1.7 - Register Blueprint & Revise Templates
+
+@pytest.mark.test_register_blueprint_module1
+
+## 1.8 - Template Folder
+
+@pytest.mark.test_template_folder_module1
+
+# Module 02 - Create Form
+
+## 2.1 - Add Form Controls
+
+@pytest.mark.test_add_from_controls_module2
+
+## 2.2 - Adjust Create Route
+
+@pytest.mark.test_adjust_create_route_data_module2
+
+## 2.3 - Create Form Data
+
+@pytest.mark.test_form_data_module2
+
+## 2.4 - Validate Data
+
+@pytest.mark.test_validate_route_module2
+
+## 2.5 - Add Data
+
+@pytest.mark.test_add_data_module2
+
+## 2.6 - Add Edit Route
+
+@pytest.mark.test_add_edit_route_module2
+
+## 2.7 - Populate Form Controls
+
+@pytest.mark.test_populate_form_controls_module2
+
+## 2.8 - Edit Form Data
+
+@pytest.mark.test_edit_form_data_module2
+
+## 2.9 - Validate Data
+
+@pytest.mark.test_validate_edit_data_module2
+
+## 2.10 - Update Data
+
+@pytest.mark.test_update_data_module2
