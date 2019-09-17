@@ -3,6 +3,6 @@ import inspect
 
 from .utils import *
 
-@pytest.mark.test__module1
-def test__module1():
+@pytest.mark.test__module3
+def test__module3():
     assert False, ''
