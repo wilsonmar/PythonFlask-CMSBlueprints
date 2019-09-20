@@ -12,6 +12,12 @@ module_exists = Path.exists(module) and Path.is_file(module)
 models = admin / 'models.py'
 models_exists = Path.exists(models) and Path.is_file(models)
 
+@pytest.mark.test_folder_structure_module1
+def test_folder_structure_module1():
+    query = Query(models.resolve())
+    print(query.select('classdef').dump())
+    assert False, ''
+
 with open(models.resolve(), 'r') as models_source_code:
     models_code = RedBaron(models_source_code.read())
 
@@ -87,30 +93,37 @@ def test_remove_models_module1():
     main_import_sql = main_module_code.find('name', lambda node: \
         node.value == 'flask_sqlalchemy' and \
         node.parent.type == 'from_import' and \
-        node.parent.targets[0].value == 'SQLAlchemy')
+        node.parent.targets.first.value == 'SQLAlchemy')
     assert main_import_sql is None, 'Have you removed the import for `flask_sqlalchemy` from `__init__.py`?'
 
     main_import_datetime = main_module_code.find('name', lambda node: \
         node.value == 'datetime' and \
         node.parent.type == 'from_import' and \
-        node.parent.targets[0].value == 'datetime')
+        node.parent.targets.first.value == 'datetime')
     assert main_import_datetime is None, 'Have you removed the import for `datetime` from `__init__.py`?'
 
 @pytest.mark.test_import_models_module1
 def test_import_models_module1():
-    main_module_import = main_module_code.find('name_as_name', value='db').parent_find('from_import')
-    model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
-    assert main_module_import is not None and \
-        ':'.join(model_path) == 'cms:admin:models', \
-        'Are you importing `db` from `cms.admin.models`?'
+    # main_module_import = main_module_code.find('name_as_name', value='db').parent_find('from_import')
+    # model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
+    # assert main_module_import is not None and \
+    #     ':'.join(model_path) == 'cms:admin:models', \
+    #     'Are you importing `db` from `cms.admin.models`?'
 
-    init_app_call = main_module_code.find('name', lambda node: \
-        node.value == 'init_app' and \
-        node.parent.value[0].value == 'db' and \
-        node.parent.value[2].type == 'call')
-    assert init_app_call is not None, 'Are you calling the `init_app` method on `db`?'
-    init_app_arg = init_app_call.parent.find('call_argument').value.value
-    assert init_app_arg == 'app', 'Are you passing `app` to the `init_app` method?'
+    print(main_module_code.find('name', value='models').parent_find('from_import'))
+
+    # content_model = main_module_code.find('name_as_name', lambda node: node.value == 'Content' and node.parent.type == 'from_import')
+    # type_model = main_module_code.find('name_as_name', value='Type')
+    # setting_model = main_module_code.find('name_as_name', value='Setting')
+    # user_model = main_module_code.find('name_as_name', value='User')
+
+    # init_app_call = main_module_code.find('name', lambda node: \
+    #     node.value == 'init_app' and \
+    #     node.parent.value[0].value == 'db' and \
+    #     node.parent.value[2].type == 'call')
+    # assert init_app_call is not None, 'Are you calling the `init_app` method on `db`?'
+    # init_app_arg = init_app_call.parent.find('call_argument').value.value
+    # assert init_app_arg == 'app', 'Are you passing `app` to the `init_app` method?'
     assert False
 
 @pytest.mark.test_create_blueprint_module1
@@ -126,7 +139,6 @@ def test_move_routes_module1():
 
 @pytest.mark.test_register_blueprint_module1
 def test_register_blueprint_module1():
-
     assert False, ''
 
 @pytest.mark.test_template_folder_module1
