@@ -3,7 +3,6 @@ import inspect
 import json
 import os
 import collections
-import parso
 
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader, exceptions, meta, nodes

@@ -1,36 +1,123 @@
 import pytest
-import inspect
 
 from pathlib import Path
-from .utils import *
 
+from redbaron import RedBaron
+
+main_module = Path.cwd() / 'cms' / '__init__.py'
 admin = Path.cwd() / 'cms' / 'admin'
+admin_exists = Path.exists(admin) and Path.is_dir(admin)
+module = admin / '__init__.py'
+module_exists = Path.exists(module) and Path.is_file(module)
+models = admin / 'models.py'
+models_exists = Path.exists(models) and Path.is_file(models)
+
+with open(models.resolve(), 'r') as models_source_code:
+    models_code = RedBaron(models_source_code.read())
+
+with open(module.resolve(), 'r') as module_source_code:
+    module_code = RedBaron(module_source_code.read())
+
+with open(main_module.resolve(), 'r') as main_module_source_code:
+    main_module_code = RedBaron(main_module_source_code.read())
 
 @pytest.mark.test_folder_structure_module1
 def test_folder_structure_module1():
-    assert Path.exists(admin) and Path.is_dir(admin), \
-        'Have you created the `admin` blueprint folder?'
-
-    module_file = admin / '__init__.py'
-    assert Path.exists(module_file) and Path.is_file(module_file), \
-        'Have you added the `__init__.py` file to the `admin` blueprint folder?'
+    assert admin_exists, 'Have you created the `admin` blueprint folder?'
+    assert module_exists, 'Have you added the `__init__.py` file to the `admin` blueprint folder?'
 
 @pytest.mark.test_models_file_module1
 def test_models_file_module1():
-    models_file = admin / 'models.py'
-    assert Path.exists(models_file) and Path.is_file(models_file), \
-        'Have you added the `models.py` file to the `admin` blueprint folder?'
+    assert models_exists, 'Have you added the `models.py` file to the `admin` blueprint folder?'
+
+@pytest.mark.test_model_file_imports_module1
+def test_model_file_imports_module1():
+    assert models_exists, 'Have you added the `models.py` file to the `admin` blueprint folder?'
+
+    import_sql = models_code.find('name', lambda node: \
+        node.value == 'flask_sqlalchemy' and \
+        node.parent.type == 'from_import' and \
+        node.parent.targets[0].value == 'SQLAlchemy')
+    assert import_sql is not None, 'Are you importing `SQLAlchemy` from `flask_sqlalchemy` at the top of `models.py`?'
+
+    import_datetime = models_code.find('name', lambda node: \
+        node.value == 'datetime' and \
+        node.parent.type == 'from_import' and \
+        node.parent.targets[0].value == 'datetime')
+    assert import_datetime is not None, 'Are you importing `datetime` from `datetime`?'
+
+    db_assignment = models_code.find('atomtrailers', lambda node: \
+        node.value[0].value == 'SQLAlchemy' and \
+        node.value[1].type == 'call' and \
+        node.parent.type == 'assignment' and \
+        node.parent.target.value == 'db')
+    assert db_assignment is not None, 'Are you creating an new `SQLAlchemy` instance named `db`?'
+    assert len(db_assignment.find_all('call_argument')) == 0, \
+        'Are you passing arguments to the `SQLAlchemy` constructor? If so you can remove them.'
 
 @pytest.mark.test_move_models_module1
 def test_move_models_module1():
-    assert False, ''
+    assert models_exists, 'Have you added the `models.py` file to the `admin` blueprint folder?'
+
+    model_classes = list(models_code.find_all('class').map(lambda node: node.name))
+    assert len(model_classes) == 4, \
+        'Have you moved the four models from `__init__.py` to `cms/admin/models.py`'
+    assert 'Type' in model_classes, \
+        'Have you moved the `Type` model from `__init__.py` to `cms/admin/models.py`'
+    assert 'Content' in model_classes, \
+        'Have you moved the `Content` model from `__init__.py` to `cms/admin/models.py`'
+    assert 'Setting' in model_classes, \
+        'Have you moved the `Setting` model from `__init__.py` to `cms/admin/models.py`'
+    assert 'Type' in model_classes, \
+        'Have you moved the `Type` model from `__init__.py` to `cms/admin/models.py`'
+
+    main_module_classes = list(main_module_code.find_all('class').map(lambda node: node.name))
+    assert len(main_module_classes) == 0, \
+        'Have you moved the four models from `__init__.py` to `cms/admin/models.py`'
+
+@pytest.mark.test_remove_models_module1
+def test_remove_models_module1():
+    db_assignment = main_module_code.find('atomtrailers', lambda node: \
+        node.value[0].value == 'SQLAlchemy' and \
+        node.value[1].type == 'call' and \
+        node.parent.type == 'assignment' and \
+        node.parent.target.value == 'db')
+    assert db_assignment is None, 'Have you removed the `SQLAlchemy` instance named `db` from `__init__.py`?'
+
+    main_import_sql = main_module_code.find('name', lambda node: \
+        node.value == 'flask_sqlalchemy' and \
+        node.parent.type == 'from_import' and \
+        node.parent.targets[0].value == 'SQLAlchemy')
+    assert main_import_sql is None, 'Have you removed the import for `flask_sqlalchemy` from `__init__.py`?'
+
+    main_import_datetime = main_module_code.find('name', lambda node: \
+        node.value == 'datetime' and \
+        node.parent.type == 'from_import' and \
+        node.parent.targets[0].value == 'datetime')
+    assert main_import_datetime is None, 'Have you removed the import for `datetime` from `__init__.py`?'
 
 @pytest.mark.test_import_models_module1
 def test_import_models_module1():
-    assert False, ''
+    main_module_import = main_module_code.find('name_as_name', value='db').parent_find('from_import')
+    model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
+    assert main_module_import is not None and \
+        ':'.join(model_path) == 'cms:admin:models', \
+        'Are you importing `db` from `cms.admin.models`?'
+
+    init_app_call = main_module_code.find('name', lambda node: \
+        node.value == 'init_app' and \
+        node.parent.value[0].value == 'db' and \
+        node.parent.value[2].type == 'call')
+    assert init_app_call is not None, 'Are you calling the `init_app` method on `db`?'
+    init_app_arg = init_app_call.parent.find('call_argument').value.value
+    assert init_app_arg == 'app', 'Are you passing `app` to the `init_app` method?'
+    assert False
 
 @pytest.mark.test_create_blueprint_module1
 def test_create_blueprint_module1():
+    # flask_import = main_module_code.find('from_import', lambda node: node.value[0].value == 'flask')
+    # assert flask_import is None, 'Are you importing the correct methods and classes from `flask`?'
+    # flask_import.targets.map(lambda node: print(node))
     assert False, ''
 
 @pytest.mark.test_move_routes_module1
@@ -39,6 +126,7 @@ def test_move_routes_module1():
 
 @pytest.mark.test_register_blueprint_module1
 def test_register_blueprint_module1():
+
     assert False, ''
 
 @pytest.mark.test_template_folder_module1
@@ -51,18 +139,18 @@ def test_template_folder_module1():
     assert Path.exists(move) and Path.is_dir(move), \
         'Have you move the `admin` folder from the root `templates` folder to the `admin` blueprint `templates` folder?'
 
-    content =      move / 'content.html'
+    content      = move / 'content.html'
     content_form = move / 'content_form.html'
-    layout =       move / 'layout.html'
-    settings =     move / 'settings.html'
-    users =        move / 'users.html'
-    assert Path.exists(content) and Path.is_file(content)  \
+    layout       = move / 'layout.html'
+    settings     = move / 'settings.html'
+    users        = move / 'users.html'
+    assert Path.exists(content) and Path.is_file(content), \
         'Is the `content.html` template file in the `cms/admin/templates/admin` folder?'
-    assert Path.exists(content_form) and Path.is_file(content_form) \
+    assert Path.exists(content_form) and Path.is_file(content_form), \
         'Is the `content_form.html` template file in the `cms/admin/templates/admin` folder?'
-    assert Path.exists(layout) and Path.is_file(layout) \
+    assert Path.exists(layout) and Path.is_file(layout), \
         'Is the `layout.html` template file in the `cms/admin/templates/admin` folder?'
-    assert Path.exists(settings) and Path.is_file(settings) \
+    assert Path.exists(settings) and Path.is_file(settings), \
         'Is the `settings.html` template file in the `cms/admin/templates/admin` folder?'
     assert Path.exists(users) and Path.is_file(users), \
         'Is the `users.html` template file in the `cms/admin/templates/admin` folder?'
