@@ -1,6 +1,6 @@
 from flask import Flask
 
-from cms.admin.models import db
+from cms.admin.models import db, Content, Type, Setting, User
 
 app = Flask(__name__)
 

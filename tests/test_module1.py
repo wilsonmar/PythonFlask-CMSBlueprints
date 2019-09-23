@@ -104,37 +104,51 @@ def test_remove_models_module1():
 
 @pytest.mark.test_import_models_module1
 def test_import_models_module1():
-    # main_module_import = main_module_code.find('name_as_name', value='db').parent_find('from_import')
+    main_module_import = main_module_code.find('name', value='models').parent_find('from_import')
+    model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
+    assert main_module_import is not None and \
+        ':'.join(model_path) == 'cms:admin:models', \
+        'Are you importing `db` from `cms.admin.models`?'
+
+    content_model = main_module_import.find('name_as_name', value='Content')
+    type_model = main_module_import.find('name_as_name', value='Type')
+    setting_model = main_module_import.find('name_as_name', value='Setting')
+    user_model = main_module_import.find('name_as_name', value='User')
+
+    init_app_call = main_module_code.find('name', lambda node: \
+        node.value == 'init_app' and \
+        node.parent.value[0].value == 'db' and \
+        node.parent.value[2].type == 'call')
+    assert init_app_call is not None, 'Are you calling the `init_app` method on `db`?'
+    init_app_arg = init_app_call.parent.find('call_argument').value.value
+    assert init_app_arg == 'app', 'Are you passing `app` to the `init_app` method?'
+
+@pytest.mark.test_create_blueprint_module1
+def test_create_blueprint_module1():
+    flask_import = module_code.find('from_import', lambda node: node.value[0].value == 'flask')
+    assert flask_import is not None, 'Are you importing the correct methods and classes from `flask`?'
+    from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
+    assert 'render_template' in from_flask_imports, 'Are you importing `render_template` from `flask`?'
+    assert 'redirect' in from_flask_imports, 'Are you importing `redirect` from `flask`?'
+    assert 'request' in from_flask_imports, 'Are you importing `request` from `flask`?'
+    assert 'url_for' in from_flask_imports, 'Are you importing `url_for` from `flask`?'
+    assert 'abort' in from_flask_imports, 'Are you importing `abort` from `flask`?'
+    assert 'Blueprint' in from_flask_imports, 'Are you importing `Blueprint` from `flask`?'
+
+    assert False, ''
+
+@pytest.mark.test_move_routes_module1
+def test_move_routes_module1():
+    # main_module_import = main_module_code.find('name', value='models').parent_find('from_import')
     # model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
     # assert main_module_import is not None and \
     #     ':'.join(model_path) == 'cms:admin:models', \
     #     'Are you importing `db` from `cms.admin.models`?'
 
-    print(main_module_code.find('name', value='models').parent_find('from_import'))
-
-    # content_model = main_module_code.find('name_as_name', lambda node: node.value == 'Content' and node.parent.type == 'from_import')
-    # type_model = main_module_code.find('name_as_name', value='Type')
-    # setting_model = main_module_code.find('name_as_name', value='Setting')
-    # user_model = main_module_code.find('name_as_name', value='User')
-
-    # init_app_call = main_module_code.find('name', lambda node: \
-    #     node.value == 'init_app' and \
-    #     node.parent.value[0].value == 'db' and \
-    #     node.parent.value[2].type == 'call')
-    # assert init_app_call is not None, 'Are you calling the `init_app` method on `db`?'
-    # init_app_arg = init_app_call.parent.find('call_argument').value.value
-    # assert init_app_arg == 'app', 'Are you passing `app` to the `init_app` method?'
-    assert False
-
-@pytest.mark.test_create_blueprint_module1
-def test_create_blueprint_module1():
-    # flask_import = main_module_code.find('from_import', lambda node: node.value[0].value == 'flask')
-    # assert flask_import is None, 'Are you importing the correct methods and classes from `flask`?'
-    # flask_import.targets.map(lambda node: print(node))
-    assert False, ''
-
-@pytest.mark.test_move_routes_module1
-def test_move_routes_module1():
+    # content_model = main_module_import.find('name_as_name', value='Content')
+    # type_model = main_module_import.find('name_as_name', value='Type')
+    # setting_model = main_module_import.find('name_as_name', value='Setting')
+    # user_model = main_module_import.find('name_as_name', value='User')
     assert False, ''
 
 @pytest.mark.test_register_blueprint_module1
