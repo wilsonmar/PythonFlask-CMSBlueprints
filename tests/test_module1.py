@@ -183,10 +183,34 @@ def test_move_routes_module1():
 
 @pytest.mark.test_register_blueprint_module1
 def test_register_blueprint_module1():
-    assert False, ''
+    bp_import = main_module_code.find('from_import', lambda node: node.find('name_as_name', value='admin_bp'))
+    assert bp_import is not None, 'Are you importing `admin_bp` from `cms.admin`?'
+    model_path = list(bp_import.find_all('name').map(lambda node: node.value))
+    assert bp_import is not None and \
+        ':'.join(model_path) == 'cms:admin', \
+        'Are you importing the `admin_bp` Blueprint from `cms.admin`?'
+
+    register_bp_call = main_module_code.find('atomtrailers', lambda node: \
+        node.value[0].value == 'app' and \
+        node.value[1].value == 'register_blueprint' and \
+        node.value[2].type == 'call')
+    assert register_bp_call is not None, 'Are you calling `register_blueprint` on `app`?'
+
+    register_blueprint_args = list(register_bp_call.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
+    assert "None:admin_bp" in register_blueprint_args, \
+        "Are you passing the Blueprint instance to should be `register_blueprint`?"
 
 @pytest.mark.test_template_folder_module1
 def test_template_folder_module1():
+    blueprint_call = module_code.find('name', lambda node: \
+        node.value == 'Blueprint' and \
+        node.parent.value[1].type == 'call').parent
+    blueprint_instance = blueprint_call.parent
+
+    blueprint_args = list(blueprint_call.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
+    assert "template_folder:'templates'" in blueprint_args, \
+        "Are you passing the Blueprint instance the correct arguments? There should be a url_prefix keyword argument set to `'/admin'`."
+
     admin_templates = admin / 'templates'
     assert Path.exists(admin_templates) and Path.is_dir(admin_templates), \
         'Have you created a `templates` folder in the `admin` blueprint folder?'
