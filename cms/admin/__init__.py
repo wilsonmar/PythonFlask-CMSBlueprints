@@ -1,10 +1,14 @@
-from flask import Blueprint, redirect, request, url_for, abort, render_template
-from cms.admin.models import Type, Content, Setting, User
+from flask import Flask, render_template, abort, Blueprint
+from cms.admin.models import Content, Setting, Type, User
 
 admin_bp = Blueprint('admin', __name__, url_prefix='/admin', template_folder='templates')
 
-@admin_bp.route('/admin', defaults = {'type': 'page'})
-@admin_bp.route('/admin/<type>')
+def requested_type(type):
+    types = [row.name for row in Type.query.all()]
+    return True if type in types else False
+
+@admin_bp.route('/', defaults = {'type': 'page'})
+@admin_bp.route('/<type>')
 def content(type):
     if requested_type(type):
         content = Content.query.join(Type).filter(Type.name == type)

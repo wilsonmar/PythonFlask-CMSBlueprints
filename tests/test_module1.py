@@ -156,9 +156,6 @@ def test_admin_module_imports_module1():
     assert flask_import is not None, 'Are you importing the correct methods and classes from `flask`?'
     from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
     assert 'render_template' in from_flask_imports, 'Are you importing `render_template` from `flask`?'
-    assert 'redirect' in from_flask_imports, 'Are you importing `redirect` from `flask`?'
-    assert 'request' in from_flask_imports, 'Are you importing `request` from `flask`?'
-    assert 'url_for' in from_flask_imports, 'Are you importing `url_for` from `flask`?'
     assert 'abort' in from_flask_imports, 'Are you importing `abort` from `flask`?'
 
     module_import = module_code.find('from_import', lambda node: node.find('name', value='models'))
@@ -179,7 +176,37 @@ def test_admin_module_imports_module1():
 
 @pytest.mark.test_move_routes_module1
 def test_move_routes_module1():
-    assert False, ''
+    assert module_code.find('def', name='requested_type') is not None, \
+        'Did you move the `requested_type` function from `__init__.py` to `admin/__init__.py`?'
+
+    content_route = module_code.find('def', name='content')
+    assert content_route is not None, \
+        'Did you move the `content` function from `__init__.py` to `admin/__init__.py`?'
+    content_decorators = content_route.find_all('dotted_name')
+    assert len(content_decorators) == 2, 'Did you move both `content` route decorators to `admin/__init__.py`?'
+    assert str(content_decorators[0]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
+    assert str(content_decorators[1]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
+
+    create_route = module_code.find('def', name='create')
+    assert create_route is not None, \
+        'Did you move the `create` function from `__init__.py` to `admin/__init__.py`?'
+    create_decorators = create_route.find_all('dotted_name')
+    assert len(create_decorators) == 1, 'Did you move the `create` route decorators to `admin/__init__.py`?'
+    assert str(create_decorators[0]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
+
+    users_route = module_code.find('def', name='users')
+    assert users_route is not None, \
+        'Did you move the `users` function from `__init__.py` to `admin/__init__.py`?'
+    users_decorators = users_route.find_all('dotted_name')
+    assert len(users_decorators) == 1, 'Did you move the `users` route decorators to `admin/__init__.py`?'
+    assert str(users_decorators[0]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `users` function?'
+
+    settings_route = module_code.find('def', name='settings')
+    assert settings_route is not None, \
+        'Did you move the `settings` function from `__init__.py` to `admin/__init__.py`?'
+    settings_decorators = settings_route.find_all('dotted_name')
+    assert len(settings_decorators) == 1, 'Did you move the `settings` route decorators to `admin/__init__.py`?'
+    assert str(settings_decorators[0]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `settings` function?'
 
 @pytest.mark.test_register_blueprint_module1
 def test_register_blueprint_module1():
@@ -197,8 +224,10 @@ def test_register_blueprint_module1():
     assert register_bp_call is not None, 'Are you calling `register_blueprint` on `app`?'
 
     register_blueprint_args = list(register_bp_call.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
+    assert len(register_blueprint_args) == 1, \
+        'Are you only passing one argument to `register_blueprint`?'
     assert "None:admin_bp" in register_blueprint_args, \
-        "Are you passing the Blueprint instance to should be `register_blueprint`?"
+        'Are you passing the Blueprint instance to should be `register_blueprint`?'
 
 @pytest.mark.test_template_folder_module1
 def test_template_folder_module1():
