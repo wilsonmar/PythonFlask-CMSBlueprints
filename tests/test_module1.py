@@ -208,6 +208,18 @@ def test_move_routes_module1():
     assert len(settings_decorators) == 1, 'Did you move the `settings` route decorators to `admin/__init__.py`?'
     assert str(settings_decorators[0]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `settings` function?'
 
+    assert main_module_code.find('def', name='content') is None, \
+        'Did you remove the `content` function from `__init__.py`?'
+
+    assert main_module_code.find('def', name='create') is None, \
+        'Did you remove the `create` function from `__init__.py`?'
+
+    assert main_module_code.find('def', name='users') is None, \
+        'Did you remove the `users` function from `__init__.py`?'
+
+    assert main_module_code.find('def', name='settings') is  None, \
+        'Did you remove the `settings` function from `__init__.py`?'
+
 @pytest.mark.test_register_blueprint_module1
 def test_register_blueprint_module1():
     bp_import = main_module_code.find('from_import', lambda node: node.find('name_as_name', value='admin_bp'))
