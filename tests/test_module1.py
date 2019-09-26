@@ -4,6 +4,8 @@ from pathlib import Path
 
 from redbaron import RedBaron
 
+from tests.utils import template_data, template_functions
+
 main_module = Path.cwd() / 'cms' / '__init__.py'
 admin = Path.cwd() / 'cms' / 'admin'
 admin_exists = Path.exists(admin) and Path.is_dir(admin)
@@ -217,7 +219,7 @@ def test_move_routes_module1():
     assert main_module_code.find('def', name='users') is None, \
         'Did you remove the `users` function from `__init__.py`?'
 
-    assert main_module_code.find('def', name='settings') is  None, \
+    assert main_module_code.find('def', name='settings') is None, \
         'Did you remove the `settings` function from `__init__.py`?'
 
 @pytest.mark.test_register_blueprint_module1
@@ -275,3 +277,17 @@ def test_template_folder_module1():
         'Is the `settings.html` template file in the `cms/admin/templates/admin` folder?'
     assert Path.exists(users) and Path.is_file(users), \
         'Is the `users.html` template file in the `cms/admin/templates/admin` folder?'
+
+    links = template_functions('layout', 'url_for')
+    assert 'admin.content:type:page' in links, \
+        'Have you updated the `url_for` for `Pages` in `admin/templates/admin/layout.html`'
+    assert 'admin.content:type:post' in links, \
+        'Have you updated the `url_for` for `Posts` in `admin/templates/admin/layout.html`'
+    assert 'admin.content:type:partial' in links, \
+        'Have you updated the `url_for` for `Partial` in `admin/templates/admin/layout.html`'
+    assert 'admin.content:type:template' in links, \
+        'Have you updated the `url_for` for `Templates` in `admin/templates/admin/layout.html`'
+    assert 'admin.users:' in links, \
+        'Have you updated the `url_for` for `Users` in `admin/templates/admin/layout.html`'
+    assert 'admin.settings:' in links, \
+        'Have you updated the `url_for` for `Settings` in `admin/templates/admin/layout.html`'

@@ -1,117 +1,23 @@
-import ast
-import inspect
-import json
-import os
-import collections
-
+import re
 from bs4 import BeautifulSoup
 from jinja2 import Environment, PackageLoader, exceptions, meta, nodes
 
-env = Environment(loader=PackageLoader('cms', 'templates'))
+env = Environment(loader=PackageLoader('cms', '/admin/templates/admin'))
 
-def flatten(d, parent_key='', sep='_'):
-    items = []
-    for k, v in d.items():
-        new_key = parent_key + sep + k if parent_key else k
-        if isinstance(v, collections.MutableMapping):
-            items.extend(flatten(v, new_key, sep=sep).items())
-        else:
-            items.append((new_key, v))
-    return dict(items)
+def template_source(name):
+    try:
+        return env.loader.get_source(env, name + '.html')[0]
+    except exceptions.TemplateNotFound:
+        return None
 
-def get_decorators(source):
-    decorators = {}
-    def visit_FunctionDef(node):
-        decorators[node.name] = []
-        for n in node.decorator_list:
-            name = ''
-            if isinstance(n, ast.Call):
-                name = n.func.attr if isinstance(n.func, ast.Attribute) else n.func.id
-            else:
-                name = n.attr if isinstance(n, ast.Attribute) else n.id
+def parsed_content(name):
+    return env.parse(template_source(name))
 
-            args = [a.s for a in n.args] if hasattr(n, 'args') else []
-            decorators[node.name].append((name, args))
-
-    node_iter = ast.NodeVisitor()
-    node_iter.visit_FunctionDef = visit_FunctionDef
-    node_iter.visit(ast.parse(inspect.getsource(source)))
-    return decorators
-
-def get_functions(source):
-    functions = []
-
-    def visit_Call(node):
-        path = node.func.attr if isinstance(node.func, ast.Attribute) else node.func.id
-        if len(node.args) != 0:
-            path += ':' + ':'.join([str(val) for arg in node.args for val in build_dict(arg).values()])
-
-        if len(node.keywords) != 0:
-            path += ':' + ':'.join([str(val) for keyword in node.keywords for val in build_dict(keyword).values()])
-
-        functions.append(path)
-
-    node_iter = ast.NodeVisitor()
-    node_iter.visit_Call = visit_Call
-    node_iter.visit(ast.parse(inspect.getsource(source)))
-    return functions
-
-def get_functions_returns(source):
-    returns = []
-
-    def visit_Return(node):
-        returns.append(build_dict(node))
-
-    node_iter = ast.NodeVisitor()
-    node_iter.visit_Return = visit_Return
-    node_iter.visit(ast.parse(inspect.getsource(source)))
-    return returns
-
-def get_statements(source):
-    statements = []
-
-    def visit_If(node):
-        statements.append(build_dict(node))
-
-    node_iter = ast.NodeVisitor()
-    node_iter.visit_If = visit_If
-    node_iter.visit(ast.parse(inspect.getsource(source)))
-    return statements
-
-def build_dict(node):
-    result = {}
-    if node.__class__.__name__ == 'Is' or node.__class__.__name__ == 'Eq':
-        result['node_type'] = node.__class__.__name__
-    for attr in dir(node):
-        if not attr.startswith("_") and attr != 'ctx' and attr != 'lineno' and attr != 'col_offset':
-            value = getattr(node, attr)
-            if isinstance(value, ast.AST):
-                value = build_dict(value)
-            elif isinstance(value, list):
-                final = [build_dict(n) for n in value]
-                value = final[0] if len(final) == 1 else final
-            if value != []:
-                result[attr] = value
-    return flatten(result, sep='/')
-
-def list_routes(app):
-    rules = []
-
-    for rule in app.url_map.iter_rules():
-        methods = ','.join(sorted(rule.methods))
-        if rule.endpoint is not 'static':
-            rules.append(rule.endpoint + ':' + methods + ':' + str(rule))
-
-    return rules
-
-def template_values(name, function):
-    values = []
-
-    for call in parsed_content(name).find_all(nodes.Call):
-        if call.node.name == function:
-            values.append(call.args[0].value + ':' + call.kwargs[0].key + ':' +  call.kwargs[0].value.value)
-
-    return values
+def template_data(name):
+    html = ''
+    for node in parsed_content(name).find_all(nodes.TemplateData):
+        html += node.data
+    return BeautifulSoup(html, 'html.parser')
 
 def template_functions(name, function_name):
     functions = []
@@ -141,45 +47,54 @@ def template_functions(name, function_name):
 
     return functions
 
-def source_soup(source):
-    return BeautifulSoup(source, 'html.parser')
+def select_code(content, start, end):
+    found = False
+    code = []
 
-def template_block(name):
-    blocks = []
-    for block in parsed_content(name).find_all(nodes.Block):
-        blocks.append(block.name)
-    return blocks
+    if isinstance(content, str):
+        parsed = parsed_content(content)
+    elif isinstance(content, nodes.Node):
+        parsed = content
+    else:
+        return []
 
-def template_data(name):
-    html = ''
-    for node in parsed_content(name).find_all(nodes.TemplateData):
-        html += node.data
-    return source_soup(html)
+    for node in parsed.find_all(nodes.Node):
+        if isinstance(node, nodes.TemplateData) and bool(re.search(start, node.data)):
+            found = True
 
-def template_variables(name):
-    return [item.node.name + ':' + item.arg.value for item in parsed_content(name).find_all(nodes.Getitem)]
+        if isinstance(node, nodes.TemplateData) and bool(re.search(end, node.data)):
+            found = False
 
-def template_exists(name):
-    return os.path.isfile('cms/admin/templates/admin' + name + '.html')
+        if found and not isinstance(node, nodes.TemplateData):
+                code.append(node)
+    return code
 
-def template_source(name):
-    try:
-        return env.loader.get_source(env, name + '.html')[0]
-    except exceptions.TemplateNotFound:
-        return None
+def is_for(node):
+    if isinstance(node, nodes.For):
+        return True
+    return False
 
-def template_soup(name):
-    return BeautifulSoup(template_source(name), 'html.parser')
+def dump(main):
+    def _dump(node):
+        if not isinstance(node, nodes.Node):
+            buf.append(node.strip())
+            return
 
-def template_find(name, tag, limit=None):
-    return BeautifulSoup(template_source(name), 'html.parser').find_all(tag, limit=limit)
+        for idx, field in enumerate(node.fields):
+            value = getattr(node, field)
+            if value == 'load' or value == 'store':
+                return
+            if idx:
+                buf.append('.')
+            if isinstance(value, list):
+                for idx, item in enumerate(value):
+                    if idx:
+                        buf.append('.')
+                    _dump(item)
+            else:
+                _dump(value)
 
-def parsed_content(name):
-    return env.parse(template_source(name))
-
-def template_extends(name):
-    return list(meta.find_referenced_templates(parsed_content(name)))
-
-def template_import(name):
-    for node in parsed_content(name).find_all(nodes.FromImport):
-        return node.template.value + ':' + ':'.join(node.names) + ':' + str(node.with_context)
+    buf = []
+    _dump(main)
+    # return ''.join(buf)
+    return buf
