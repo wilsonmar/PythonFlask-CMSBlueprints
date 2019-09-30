@@ -33,6 +33,17 @@ def get_request_method():
     assert request_method is not None, 'Do you have an `if` statement that tests `request.method`?'
     return request_method
 
+def get_form_data(name):
+    variable = get_request_method().parent.find_all('assign', lambda node: node.target.value == name)
+    assert variable is not None, 'Do you have a variable named `' + name + '`?'
+    right = variable.find('atomtrailers')
+    assert right is not None, 'Are you setting the `' + name + '` variable correctly?'
+    assert len(right) == 3 and \
+        right[0].value == 'request' and \
+        right[1].value == 'form' and \
+        str(right[2]).replace("'", '"') == '["' + name + '"]', \
+        'Are you setting the `' + name + '` varaible to request.form["' + name + '"]?'
+
 @pytest.mark.test_add_from_controls_module2
 def test_add_from_controls_module2():
     assert admin_exists and admin_templates_exists, \
@@ -75,16 +86,32 @@ def test_add_from_controls_module2():
 
 @pytest.mark.test_adjust_create_route_data_module2
 def test_adjust_create_route_data_module2():
-    strings = list(get_create_method().find_all('string').map(lambda node: node.value))
-    assert '"GET"' in strings or "'GET'" in strings and \
-        '"POST"' in strings or "'POST'" in strings, \
+    strings = list(get_create_method().find_all('string').map(lambda node: node.value.replace("'", '"')))
+    assert '"GET"' in strings and '"POST"' in strings, \
         'Have you added the `methods` keyword argument to the `create` route allowing `POST` and `GET`?'
     assert str(get_request_method()).find('POST'), 'Are you testing if the request method is `POST`?'
+    title = get_request_method().parent.find_all('assign', lambda node: node.target.value == 'title')
+    assert title is not None, 'Do you have a variable named `title`?'
+    right = title.find('atomtrailers')
+    assert len(right) == 3 and \
+        right[0].value == 'request' and \
+        right[1].value == 'form' and \
+        str(right[2]).replace("'", '"') == '["title"]', \
+        'Are you setting the `title` varaible to request.form["title"]?'
 
 @pytest.mark.test_form_data_module2
 def test_form_data_module2():
-    print(get_request_method().parent)
+    get_form_data('slug')
+    get_form_data('type_id')
+    get_form_data('body')
+
+    error = get_request_method().parent.find_all('assign', lambda node: node.target.value == 'error')
+    assert error is not None, 'Do you have a variable named `error`?'
+    # right = error.find('name')
+    # assert right is not None, 'Are you setting the `error` variable correctly?'
+    # print(right)
     assert False, ''
+    
 
 @pytest.mark.test_validate_create_data_module2
 def test_validate_create_data_module2():

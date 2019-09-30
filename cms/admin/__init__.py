@@ -20,12 +20,12 @@ def content(type):
 def create(type):
     if requested_type(type):
         # -----------------------------------
-        # if request.method == 'POST':
-        #     title = request.form['title']
-        #     slug = request.form['slug']
-        #     type_id = request.form['type_id']
-        #     body = request.form['body']
-        #     error = None
+        if request.method == 'POST':
+            title = request.form['title']
+            slug = request.form['slug']
+            type_id = request.form['type_id']
+            body = request.form['body']
+            error = None
 
         #     if not title: 
         #         error = 'The title is required.'
