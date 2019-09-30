@@ -74,10 +74,21 @@ def is_for(node):
         return True
     return False
 
-def dump(main):
-    def _dump(node):
+def if_statements(name):
+    return parsed_content(name).find(nodes.CondExpr)
+
+def for_statement(name):
+    for_loop = parsed_content(name).find(nodes.For)
+    for node in for_loop.find_all(nodes.Getattr):
+        print(node)
+
+def simplify(main):
+    def _simplify(node):
         if not isinstance(node, nodes.Node):
-            buf.append(node.strip())
+            if isinstance(node, (type(None), bool)):
+                buf.append(repr(node))
+            else:
+                buf.append(node)
             return
 
         for idx, field in enumerate(node.fields):
@@ -90,11 +101,10 @@ def dump(main):
                 for idx, item in enumerate(value):
                     if idx:
                         buf.append('.')
-                    _dump(item)
+                    _simplify(item)
             else:
-                _dump(value)
+                _simplify(value)
 
     buf = []
-    _dump(main)
-    # return ''.join(buf)
-    return buf
+    _simplify(main)
+    return ''.join(buf)

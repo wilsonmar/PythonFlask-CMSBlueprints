@@ -14,6 +14,25 @@ admin_templates_exists = Path.exists(admin_templates) and Path.is_dir(admin_temp
 content_form_exists = Path.exists(content_form) and Path.is_file(content_form)
 content_form_template = template_data('content_form')
 
+with open(admin_module.resolve(), 'r') as admin_module_source_code:
+    admin_module_code = RedBaron(admin_module_source_code.read())
+
+def get_create_route():
+    create_route = admin_module_code.find('def', name='create')
+    assert create_route is not None, 'Have you moved the `create` route to `admin/__init__.py`?'
+    return create_route
+
+def get_create_method():
+    create_method = get_create_route().find_all('call_argument', lambda node: str(node.target) == 'methods')
+    assert create_method is not None, 'Does the `create` route have a keyword argument of `methods`?'
+    return create_method
+
+def get_request_method():
+    request_method = get_create_route().find('comparison', lambda node: \
+        'request.method' in [str(node.first), str(node.second)])
+    assert request_method is not None, 'Do you have an `if` statement that tests `request.method`?'
+    return request_method
+
 @pytest.mark.test_add_from_controls_module2
 def test_add_from_controls_module2():
     assert admin_exists and admin_templates_exists, \
@@ -38,20 +57,33 @@ def test_add_from_controls_module2():
     assert select_template_code[0].target.name == 'type' and select_template_code[0].iter.name == 'types', \
         'Is the for loop cycling through `types`?'
 
-    assert len(select_code(select_template_code[0], '<option', '</option>')) > 0, \
-        'Have you added an `<option>` element inside the `for` loop?'
+    option_el = select_code(select_template_code[0], '<option', '</option>')
+    assert len(option_el) > 0, 'Have you added an `<option>` element inside the `for` loop?'
+
+    assert simplify(option_el[0]) == 'type.id', 'Is the `value` attribute set to `type.id`?'
+
+    assert simplify(if_statements('content_form')) == 'type.name.eq.type_name.selected.None', \
+        'Do you have an `if` statement in the `<option>` to test whether `type.name` is equal to `type_name`?'
+
+    type_name = select_code(select_template_code[0], '>', '</option>')
+    assert simplify(type_name[0]) == 'type.name', \
+        'Are you adding `type.name` as the option name?'
 
     links = template_functions('content_form', 'url_for')
     assert 'admin.content:type:type_name' in links, \
         'Do you have an `href` with a call to `url_for` pointing to `admin.content` passing in `type=type_name`?'
-    assert False, ''
 
 @pytest.mark.test_adjust_create_route_data_module2
 def test_adjust_create_route_data_module2():
-    assert False, ''
+    strings = list(get_create_method().find_all('string').map(lambda node: node.value))
+    assert '"GET"' in strings or "'GET'" in strings and \
+        '"POST"' in strings or "'POST'" in strings, \
+        'Have you added the `methods` keyword argument to the `create` route allowing `POST` and `GET`?'
+    assert str(get_request_method()).find('POST'), 'Are you testing if the request method is `POST`?'
 
 @pytest.mark.test_form_data_module2
 def test_form_data_module2():
+    print(get_request_method().parent)
     assert False, ''
 
 @pytest.mark.test_validate_create_data_module2
