@@ -1,4 +1,5 @@
 import pytest
+import re
 from pathlib import Path
 from redbaron import RedBaron
 
@@ -10,6 +11,7 @@ admin_templates = admin / 'templates' / 'admin'
 content_form = admin_templates / 'content_form.html'
 
 admin_exists = Path.exists(admin) and Path.is_dir(admin)
+admin_module_exists = Path.exists(admin_module) and Path.is_file(admin_module)
 admin_templates_exists = Path.exists(admin_templates) and Path.is_dir(admin_templates)
 content_form_exists = Path.exists(content_form) and Path.is_file(content_form)
 content_form_template = template_data('content_form')
@@ -17,32 +19,38 @@ content_form_template = template_data('content_form')
 with open(admin_module.resolve(), 'r') as admin_module_source_code:
     admin_module_code = RedBaron(admin_module_source_code.read())
 
-def get_route(name):
-    route = admin_module_code.find('def', name=name)
-    assert route is not None, 'Have you moved the `{}` route to `admin/__init__.py`?'.format(name)
-    return route
+def get_route(route):
+    route_function = admin_module_code.find('def', name=route)
+    assert route_function is not None, 'Does the `{}` route function exist in `admin/__init__.py`?'.format(route)
+    return route_function
 
-def get_methods_keyword(name):
-    methods_keyword = get_route(name).find_all('call_argument', lambda node: str(node.target) == 'methods')
+def get_methods_keyword(route):
+    methods_keyword = get_route(route).find_all('call_argument', lambda node: str(node.target) == 'methods')
     assert methods_keyword is not None, 'Does the `{}` route have a keyword argument of `methods`?'.format(name)
     return methods_keyword
 
-def get_request_method(name, parent=True):
-    request_method = get_route(name).find('comparison', lambda node: \
+def get_request_method(route, parent=True):
+    request_method = get_route(route).find('comparison', lambda node: \
         'request.method' in [str(node.first), str(node.second)])
     assert request_method is not None, 'Do you have an `if` statement that tests `request.method`?'
     return request_method.parent if parent else request_method
 
-def get_form_data(name):
-    variable = get_request_method('create').find_all('assign', lambda node: node.target.value == name)
-    assert variable is not None, 'Do you have a variable named `' + name + '`?'
+def get_form_data(route, name):
+    variable = get_request_method(route).find_all('assign', lambda node: str(node.target) == name)
+    print(variable)
+    assert variable is not None, 'Do you have a variable named `{}`?'
     right = variable.find('atomtrailers')
-    assert right is not None, 'Are you setting the `' + name + '` variable correctly?'
+    assert right is not None, 'Are you setting the `{}` variable correctly?'.format(name)
     assert len(right) == 3 and \
         right[0].value == 'request' and \
         right[1].value == 'form' and \
-        str(right[2]).replace("'", '"') == '["' + name + '"]', \
-        'Are you setting the `' + name + '` varaible to request.form["' + name + '"]?'
+        str(right[2]).replace("'", '"') == '["{}"]'.format(name.replace('content.', '')), \
+        'Are you setting the `' + name + '` varaible to request.form["{}"]?'.format(name.replace('content.', ''))
+
+create_request_method  = get_request_method('create')
+
+edit_route = get_route('edit')
+edit_request_method  = get_request_method('edit')
 
 @pytest.mark.test_add_from_controls_module2
 def test_add_from_controls_module2():
@@ -86,40 +94,36 @@ def test_add_from_controls_module2():
 
 @pytest.mark.test_adjust_create_route_data_module2
 def test_adjust_create_route_data_module2():
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     strings = list(get_methods_keyword('create').find_all('string').map(lambda node: node.value.replace("'", '"')))
     assert '"GET"' in strings and '"POST"' in strings, \
         'Have you added the `methods` keyword argument to the `create` route allowing `POST` and `GET`?'
     assert str(get_request_method('create', False)).find('POST'), 'Are you testing if the request method is `POST`?'
-    title = get_request_method('create').find_all('assign', lambda node: node.target.value == 'title')
-    assert title is not None, 'Do you have a variable named `title`?'
-    right = title.find('atomtrailers')
-    assert len(right) == 3 and \
-        right[0].value == 'request' and \
-        right[1].value == 'form' and \
-        str(right[2]).replace("'", '"') == '["title"]', \
-        'Are you setting the `title` varaible to request.form["title"]?'
+    get_form_data('create', 'title')
 
 @pytest.mark.test_form_data_module2
 def test_form_data_module2():
-    get_form_data('slug')
-    get_form_data('type_id')
-    get_form_data('body')
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
+    get_form_data('create', 'slug')
+    get_form_data('create', 'type_id')
+    get_form_data('create', 'body')
 
-    error = get_request_method('create').find('assign', lambda node: node.target.value == 'error')
+    error = create_request_method.find('assign', lambda node: node.target.value == 'error')
     assert error is not None, 'Do you have a variable named `error`?'
     assert error.value.to_python() is None, 'Are you setting the `error` variable correctly?'
 
 @pytest.mark.test_validate_create_data_module2
 def test_validate_create_data_module2():
-    request_method_if  = get_request_method('create')
-    title_error = request_method_if.find('unitary_operator', lambda node: node.target.value == 'title')
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
+
+    title_error = create_request_method.find('unitary_operator', lambda node: node.target.value == 'title')
     assert title_error is not None and title_error.parent is not None and title_error.parent.type == 'if', \
         'Do you have an `if` statement that tests if `title` is `not` empty.'
     title_error_message = title_error.parent.find('assign', lambda node: node.target.value == 'error')
     assert title_error_message is not None and title_error_message.value.type == 'string', \
         'Are you setting the `error` variable to the appropriate `string` in the `if` statement.'
 
-    type_error = request_method_if.find('unitary_operator', lambda node: node.target.value == 'type')
+    type_error = create_request_method.find('unitary_operator', lambda node: node.target.value == 'type')
     assert type_error is not None and type_error.parent is not None and type_error.parent.type == 'elif', \
         'Do you have an `if` statement that tests if `type` is `not` empty.'
     type_error_message = type_error.parent.find('assign', lambda node: node.target.value == 'error')
@@ -128,8 +132,8 @@ def test_validate_create_data_module2():
 
 @pytest.mark.test_add_data_module2
 def test_add_data_module2():
-    request_method_if  = get_request_method('create')
-    error_check = request_method_if.find('comparison', lambda node: \
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
+    error_check = create_request_method.find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
     assert error_check is not None and error_check.parent.type == 'if' and \
         ((error_check.first.value == 'error' and error_check.second.value == 'None') or \
@@ -145,13 +149,15 @@ def test_add_data_module2():
     content_args = list(content_instance.find_all('call_argument').map(lambda node: node.target.value + ':' + node.value.value))
 
     assert 'title:title' in content_args, \
-        'Are you passing a `title` keyword argument set to `title` to the Content instance?'
+        'Are you passing a `title` keyword argument set to `title` to the `Content` instance?'
     assert 'slug:slug' in content_args, \
-        'Are you passing a `slug` keyword argument set to `slug` to the Content instance?'
+        'Are you passing a `slug` keyword argument set to `slug` to the `Content` instance?'
     assert 'type_id:type_id' in content_args, \
-        'Are you passing a `type_id` keyword argument set to `type_id` to the Content instance?'
+        'Are you passing a `type_id` keyword argument set to `type_id` to the `Content` instance?'
     assert 'body:body' in content_args, \
-        'Are you passing a `body` keyword argument set to `body` to the Content instance?'
+        'Are you passing a `body` keyword argument set to `body` to the `Content` instance?'
+    assert len(content_args) == 4, \
+        'Are you passing the correct number of keyword arguments to the `Content` instance?'
 
     add_call = error_check_if.find('atomtrailers', lambda node: \
         node.value[0].value == 'db' and \
@@ -180,13 +186,13 @@ def test_add_data_module2():
         node.value[1].type == 'call')
     assert url_for_call is not None, 'Are you passing a call to the `url_for()` function to the `redirect()` function?'
 
-    url_for_args = list(url_for_call.find_all('call_argument').map(lambda node: str(node.target) + ':' + node.value.value))
-    assert "None:'content'" in url_for_args, \
+    url_for_args = list(url_for_call.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value.value).replace("'", '"')))
+    assert 'None:"content"' in url_for_args, \
         "Are you passing the `'content'` to the `url_for()` function?"
     assert  'type:type' in url_for_args, \
         'Are you passing a `type` keyword argument set to `type` to the `url_for()` function?'
 
-    assert request_method_if.find_all('atomtrailers', lambda node: \
+    assert create_request_method.find_all('atomtrailers', lambda node: \
         node.value[0].value == 'flash' and \
         node.value[1].type == 'call' and \
         node.value[1].value[0].value.value == 'error') is not None, \
@@ -194,20 +200,108 @@ def test_add_data_module2():
 
 @pytest.mark.test_add_edit_route_module2
 def test_add_edit_route_module2():
-    assert False, ''
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
+    assert edit_route.find('def_argument', lambda node: node.target.value == 'id') is not None, \
+        'Is the `edit` route function accepting an argument of `id`?'
+
+    content = edit_route.find('assign', lambda node: node.target.value == 'content')
+    assert content is not None, 'Are you setting the `content` variable correctly?'
+    query_call = content.find('atomtrailers', lambda node: \
+        node.value[0].value == 'Content' and \
+        node.value[1].value == 'query' and \
+        node.value[2].value == 'get_or_404' and \
+        node.value[3].type == 'call' and \
+        node.value[3].value[0].value.value == 'id'
+        )
+    assert query_call is not None, 'Are you calling the `Content.query.get_or_404()` function and are you passing in the correct argument?'
+
+    edit_decorator = edit_route.find('dotted_name', lambda node: \
+        node.value[0].value == 'admin_bp' and \
+        node.value[1].type == 'dot' and \
+        node.value[2].value == 'route' and \
+        node.parent.call.type == 'call' and \
+        bool(re.search('/admin/edit/<(int:)?id>', node.parent.call.value[0].value.value))
+        )
+    assert edit_decorator is not None, 'Have you add a route decorator to the `edit` route function? Are you passing the correct route pattern?'
+
+    strings = list(get_methods_keyword('edit').find_all('string').map(lambda node: node.value.replace("'", '"')))
+    assert '"GET"' in strings and '"POST"' in strings, \
+        'Have you added the `methods` keyword argument to the `edit` route allowing `POST` and `GET`?'
+
+@pytest.mark.test_edit_route_render_template_module2
+def test_edit_route_render_template_module2():
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
+    type = edit_route.find('assign', lambda node: node.target.value == 'type')
+    assert type is not None, 'Are you setting the `type` variable correctly?'
+    get_call = type.find('atomtrailers', lambda node: \
+        node.value[0].value == 'Type' and \
+        node.value[1].value == 'query' and \
+        node.value[2].value == 'get' and \
+        node.value[3].type == 'call'
+        )
+    assert get_call is not None, 'Are you calling the `Type.query.get()` function and assigning the result to `type`?'
+    assert get_call.find('call_argument', lambda node: \
+        node.value[0].value == 'request' and \
+        node.value[1].value == 'form' and \
+        node.value[2].value.value.replace("'", '"') == '"type_id"') is not None, \
+        'Are you passing the correct argument to the `Type.query.get()` function?'
+    types = edit_route.find('assign', lambda node: node.target.value == 'types')
+    assert types is not None, 'Are you setting the `types` variable correctly?'
+    all_call = types.find('atomtrailers', lambda node: \
+        node.value[0].value == 'Type' and \
+        node.value[1].value == 'query' and \
+        node.value[2].value == 'all' and \
+        node.value[3].type == 'call'
+        )
+    assert all_call is not None, 'Are you calling the `Type.query.all()` function and assigning the result to `types`?'
+
+    return_render = edit_route.find('return', lambda node: \
+        node.value[0].value == 'render_template' and \
+        node.value[1].type == 'call')
+    assert return_render is not None, 'Are you returning a call to the `render_template()` function?'
+
+    return_render_args = list(return_render.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value).replace("'", '"')))
+
+    assert 'None:"admin/content_form.html"' in return_render_args, \
+        'Are you passing the correct HTML template to the `render_template()` function?'
+    assert 'types:types' in return_render_args, \
+        'Are you passing a `types` keyword argument set to `types` to the `render_template()` function?'
+    assert 'title:"Edit"' in return_render_args, \
+        'Are you passing a `title` keyword argument set to `"Edit"` to the `render_template()` function?'
+    assert 'item_title:content.title' in return_render_args, \
+        'Are you passing a `item_title` keyword argument set to `content.title` to the `render_template()` function?'
+    assert 'slug:content.slug' in return_render_args, \
+        'Are you passing a `slug` keyword argument set to `content.slug` to the `render_template()` function?'
+    assert 'type_name:type.name' in return_render_args, \
+        'Are you passing a `type_name` keyword argument set to `type.name` to the `render_template()` function?'
+    assert 'type_id:content.type_id' in return_render_args, \
+        'Are you passing a `type_id` keyword argument set to `content.type_id` to the `render_template()` function?'
+    assert 'body:content.body' in return_render_args, \
+        'Are you passing a `body` keyword argument set to `content.body` to the `render_template()` function?'
+    assert len(return_render_args) == 8, \
+        'Are you passing the correct number of keyword arguments to the `render_template()` function?'
 
 @pytest.mark.test_populate_form_controls_module2
 def test_populate_form_controls_module2():
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     assert False, ''
 
 @pytest.mark.test_edit_form_data_module2
 def test_edit_form_data_module2():
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
+    assert str(get_request_method('edit', False)).find('POST'), 'Are you testing if the request method is `POST`?'
+    get_form_data('edit', 'content.title')
+    get_form_data('edit', 'content.slug')
+    get_form_data('edit', 'content.type_id')
+    get_form_data('edit', 'content.body')
     assert False, ''
 
 @pytest.mark.test_validate_edit_data_module2
 def test_validate_edit_data_module2():
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     assert False, ''
 
 @pytest.mark.test_update_data_module2
 def test_update_data_module2():
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     assert False, ''
