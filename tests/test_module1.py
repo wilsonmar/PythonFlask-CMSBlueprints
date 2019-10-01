@@ -280,14 +280,14 @@ def test_template_folder_module1():
 
     links = template_functions('layout', 'url_for')
     assert 'admin.content:type:page' in links, \
-        'Have you updated the `url_for` for `Pages` in `admin/templates/admin/layout.html`'
+        'Have you updated the `url_for` for `Pages` in `admin/templates/admin/layout.html`?'
     assert 'admin.content:type:post' in links, \
-        'Have you updated the `url_for` for `Posts` in `admin/templates/admin/layout.html`'
+        'Have you updated the `url_for` for `Posts` in `admin/templates/admin/layout.html`?'
     assert 'admin.content:type:partial' in links, \
-        'Have you updated the `url_for` for `Partial` in `admin/templates/admin/layout.html`'
+        'Have you updated the `url_for` for `Partial` in `admin/templates/admin/layout.html`?'
     assert 'admin.content:type:template' in links, \
-        'Have you updated the `url_for` for `Templates` in `admin/templates/admin/layout.html`'
+        'Have you updated the `url_for` for `Templates` in `admin/templates/admin/layout.html`?'
     assert 'admin.users:' in links, \
-        'Have you updated the `url_for` for `Users` in `admin/templates/admin/layout.html`'
+        'Have you updated the `url_for` for `Users` in `admin/templates/admin/layout.html`?'
     assert 'admin.settings:' in links, \
-        'Have you updated the `url_for` for `Settings` in `admin/templates/admin/layout.html`'
+        'Have you updated the `url_for` for `Settings` in `admin/templates/admin/layout.html`?'

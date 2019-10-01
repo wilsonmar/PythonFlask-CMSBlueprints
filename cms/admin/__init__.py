@@ -27,18 +27,18 @@ def create(type):
             body = request.form['body']
             error = None
 
-        #     if not title: 
-        #         error = 'The title is required.'
-        #     elif not type:
-        #         error = 'The type is required.'
+            if not title:
+                error = 'The title is required.'
+            elif not type:
+                error = 'The type is required.'
 
-        #     if error is None:
-        #         content = Content(title=title, slug=slug, type_id=type_id, body=body)
-        #         db.session.add(content)
-        #         db.session.commit()
-        #         return redirect(url_for('content', type=type))
+            if error == None:
+                content = Content(title=title, slug=slug, type_id=type_id, body=body)
+                db.session.add(content)
+                db.session.commit()
+                return redirect(url_for('content', type=type))
 
-        #     flash(error)
+            flash(error)
         # -----------------------------------
         types = Type.query.all()
         return render_template('admin/content_form.html', title='Create', types=types, type_name=type)
