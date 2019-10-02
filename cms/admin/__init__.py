@@ -55,17 +55,17 @@ def edit(id):
         content.slug = request.form['slug']
         content.type_id = request.form['type_id']
         content.body = request.form['body']
-#         content.updated_at = datetime.utcnow()
-#         error = None
+        content.updated_at = datetime.utcnow()
+        error = None
 
-#         if not request.form['title']:
-#             error = 'The title is required.'
+        if not request.form['title']:
+            error = 'The title is required.'
 
-#         if error is None:
-#             db.session.commit()
-#             return redirect(url_for('content', type=type.name))
+        if error is None:
+            db.session.commit()
+            return redirect(url_for('content', type=type.name))
 
-#         flash(error)
+        flash(error)
 
     return render_template('admin/content_form.html',
         types=types, title='Edit', item_title=content.title,
