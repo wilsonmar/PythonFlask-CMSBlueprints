@@ -15,90 +15,120 @@ models = admin / 'models.py'
 models_exists = Path.exists(models) and Path.is_file(models)
 
 def models_code():
-    assert admin_exists, 'Have you created the `admin` blueprint folder?'
-    assert models_exists, 'Have you added the `models.py` file to the `admin` blueprint folder?'
+    assert admin_exists, \
+        'Have you created the `admin` blueprint folder?'
+    assert models_exists, \
+        'Have you added the `models.py` file to the `admin` blueprint folder?'
     with open(models.resolve(), 'r') as models_source_code:
         return RedBaron(models_source_code.read())
 
 def module_code():
-    assert admin_exists, 'Have you created the `admin` blueprint folder?'
-    assert models_exists, 'Have you added the `models.py` file to the `admin` blueprint folder?'
+    assert admin_exists, \
+        'Have you created the `admin` blueprint folder?'
+    assert models_exists, \
+        'Have you added the `models.py` file to the `admin` blueprint folder?'
     with open(module.resolve(), 'r') as module_source_code:
         return RedBaron(module_source_code.read())
 
 def main_module_code():
-    assert admin_exists, 'Have you created the `admin` blueprint folder?'
-    assert module_exists, 'Have do you have an `__init__.py` file in the root folder?'
+    assert admin_exists, \
+        'Have you created the `admin` blueprint folder?'
+    assert module_exists, \
+        'Have do you have an `__init__.py` file in the root folder?'
     with open(main_module.resolve(), 'r') as main_module_source_code:
         return RedBaron(main_module_source_code.read())
 
 @pytest.mark.test_admin_blueprint_folder_structure_module1
 def test_admin_blueprint_folder_structure_module1():
-    assert admin_exists, 'Have you created the `admin` blueprint folder?'
-    assert module_exists, 'Have you added the `__init__.py` file to the `admin` blueprint folder?'
+    assert admin_exists, \
+        'Have you created the `admin` blueprint folder?'
+    assert module_exists, \
+        'Have you added the `__init__.py` file to the `admin` blueprint folder?'
 
 @pytest.mark.test_admin_blueprint_models_file_module1
 def test_admin_blueprint_models_file_module1():
-    assert models_exists, 'Have you added the `models.py` file to the `admin` blueprint folder?'
+    assert models_exists, \
+        'Have you added the `models.py` file to the `admin` blueprint folder?'
 
 @pytest.mark.test_admin_blueprint_models_file_imports_module1
 def test_admin_blueprint_models_file_imports_module1():
-    assert models_exists, 'Have you added the `models.py` file to the `admin` blueprint folder?'
+    assert models_exists, \
+        'Have you added the `models.py` file to the `admin` blueprint folder?'
 
     import_sql = models_code().find('name', lambda node: \
         node.value == 'flask_sqlalchemy' and \
         node.parent.type == 'from_import' and \
         node.parent.targets[0].value == 'SQLAlchemy')
-    assert import_sql is not None, 'Are you importing `SQLAlchemy` from `flask_sqlalchemy` at the top of `models.py`?'
+    assert import_sql is not None, \
+        'Are you importing `SQLAlchemy` from `flask_sqlalchemy` at the top of `models.py`?'
 
     import_datetime = models_code().find('name', lambda node: \
         node.value == 'datetime' and \
         node.parent.type == 'from_import' and \
         node.parent.targets[0].value == 'datetime')
-    assert import_datetime is not None, 'Are you importing `datetime` from `datetime`?'
+    assert import_datetime is not None, \
+        'Are you importing `datetime` from `datetime`?'
 
     db_assignment = models_code().find('atomtrailers', lambda node: \
         node.value[0].value == 'SQLAlchemy' and \
         node.value[1].type == 'call' and \
         node.parent.type == 'assignment' and \
         node.parent.target.value == 'db')
-    assert db_assignment is not None, 'Are you creating an new `SQLAlchemy` instance named `db`?'
-    assert len(db_assignment.find_all('call_argument')) == 0, \
+    assert db_assignment is not None, \
+        'Are you creating an new `SQLAlchemy` instance named `db`?'
+    no_arguments = len(db_assignment.find_all('call_argument')) == 0
+    assert no_arguments, \
         'Are you passing arguments to the `SQLAlchemy` constructor? If so you can remove them.'
 
 @pytest.mark.test_admin_blueprint_move_model_classes_module1
 def test_admin_blueprint_move_model_classes_module1():
-    assert models_exists, 'Have you added the `models.py` file to the `admin` blueprint folder?'
+    assert models_exists, \
+        'Have you added the `models.py` file to the `admin` blueprint folder?'
 
     model_classes = list(models_code().find_all('class').map(lambda node: node.name))
-    assert len(model_classes) == 4, \
+    class_count = len(model_classes) == 4
+    type_class = 'Type' in model_classes
+    content_class = 'Content' in model_classes
+    setting_class = 'Setting' in model_classes
+    user_class = 'User' in model_classes
+    assert class_count, \
         'Have you moved the four models from `__init__.py` to `cms/admin/models.py`'
-    assert 'Type' in model_classes, \
+    assert type_class, \
         'Have you moved the `Type` model from `__init__.py` to `cms/admin/models.py`'
-    assert 'Content' in model_classes, \
+    assert content_class, \
         'Have you moved the `Content` model from `__init__.py` to `cms/admin/models.py`'
-    assert 'Setting' in model_classes, \
+    assert setting_class, \
         'Have you moved the `Setting` model from `__init__.py` to `cms/admin/models.py`'
-    assert 'Type' in model_classes, \
-        'Have you moved the `Type` model from `__init__.py` to `cms/admin/models.py`'
+    assert user_class, \
+        'Have you moved the `User` model from `__init__.py` to `cms/admin/models.py`'
 
     main_module_classes = list(main_module_code().find_all('class').map(lambda node: node.name))
-    assert len(main_module_classes) == 0, \
+    main_module_class_count = len(main_module_classes) == 0
+    assert main_module_class_count, \
         'Have you moved the four models from `__init__.py` to `cms/admin/models.py`'
 
     main_module_import = main_module_code().find('from_import', lambda node: node.find('name', value='models'))
-    assert main_module_import is not None, 'Are you importing the correct methods and classes from `cms.admin.models`?'
-    model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
-    assert main_module_import is not None and \
-        ':'.join(model_path) == 'cms:admin:models', \
+    assert main_module_import is not None, \
         'Are you importing the correct methods and classes from `cms.admin.models`?'
-    assert main_module_import.find('name_as_name', value='Content') is not None, \
+    model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
+    import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
+
+    assert import_path, \
+        'Are you importing the correct methods and classes from `cms.admin.models`?'
+    name_as_name_content = main_module_import.find('name_as_name', value='Content') is not None
+    assert name_as_name_content, \
         'Are you importing the `Content` model class from `cms.admin.models`?'
-    assert main_module_import.find('name_as_name', value='Type') is not None, \
+
+    name_as_name_type = main_module_import.find('name_as_name', value='Type') is not None
+    assert name_as_name_type, \
         'Are you importing the `Type` model class from `cms.admin.models`?'
-    assert main_module_import.find('name_as_name', value='Setting') is not None, \
+
+    name_as_name_setting =  main_module_import.find('name_as_name', value='Setting') is not None
+    assert name_as_name_setting, \
         'Are you importing the `Setting` model class from `cms.admin.models`?'
-    assert main_module_import.find('name_as_name', value='User') is not None, \
+
+    name_as_name_user =  main_module_import.find('name_as_name', value='User') is not None
+    assert name_as_name_user, \
         'Are you importing the `User` model class from `cms.admin.models`?'
 
 @pytest.mark.test_cms_module_remove_imports_module1
@@ -108,196 +138,264 @@ def test_cms_module_remove_imports_module1():
         node.value[1].type == 'call' and \
         node.parent.type == 'assignment' and \
         node.parent.target.value == 'db')
-    assert db_assignment is None, 'Have you removed the `SQLAlchemy` instance named `db` from `__init__.py`?'
+    assert db_assignment is None, \
+        'Have you removed the `SQLAlchemy` instance named `db` from `__init__.py`?'
 
     main_import_sql = main_module_code().find('name', lambda node: \
         node.value == 'flask_sqlalchemy' and \
         node.parent.type == 'from_import' and \
         node.parent.targets[0].value == 'SQLAlchemy')
-    assert main_import_sql is None, 'Have you removed the import for `flask_sqlalchemy` from `__init__.py`?'
+    assert main_import_sql is None, \
+        'Have you removed the import for `flask_sqlalchemy` from `__init__.py`?'
 
     main_import_datetime = main_module_code().find('name', lambda node: \
         node.value == 'datetime' and \
         node.parent.type == 'from_import' and \
         node.parent.targets[0].value == 'datetime')
-    assert main_import_datetime is None, 'Have you removed the import for `datetime` from `__init__.py`?'
+    assert main_import_datetime is None, \
+        'Have you removed the import for `datetime` from `__init__.py`?'
 
 @pytest.mark.test_cms_module_import_db_module1
 def test_cms_module_import_db_module1():
-
     main_module_import = main_module_code().find('from_import', lambda node: node.find('name', value='models'))
-    assert main_module_import is not None, 'Are you importing the correct methods and classes from `cms.admin.models`?'
+    assert main_module_import is not None, \
+        'Are you importing the correct methods and classes from `cms.admin.models`?'
     model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
-    assert main_module_import is not None and \
-        ':'.join(model_path) == 'cms:admin:models', \
+    main_import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
+    assert main_import_path, \
         'Are you importing the correct methods and classes from `cms.admin.models`?'
 
-    assert main_module_import.find('name_as_name', value='db') is not None, \
+    name_as_name_db = main_module_import.find('name_as_name', value='db')
+    assert name_as_name_db is not None, \
         'Are you importing the `db` SQLAlchemy instance from `cms.admin.models`?'
 
     init_app_call = main_module_code().find('name', lambda node: \
         node.value == 'init_app' and \
         node.parent.value[0].value == 'db' and \
         node.parent.value[2].type == 'call')
-    assert init_app_call is not None, 'Are you calling the `init_app` method on `db`?'
+    assert init_app_call is not None, \
+        'Are you calling the `init_app` method on `db`?'
     init_app_arg = init_app_call.parent.find('call_argument').value.value
-    assert init_app_arg == 'app', 'Are you passing `app` to the `init_app` method?'
+    assert init_app_arg == 'app', \
+        'Are you passing `app` to the `init_app` method?'
 
 @pytest.mark.test_admin_blueprint_create_blueprint_module1
 def test_admin_blueprint_create_blueprint_module1():
-    flask_import = module_code().find('from_import', lambda node: node.value[0].value == 'flask')
-    assert flask_import is not None, 'Are you importing the correct methods and classes from `flask`?'
-    from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
-    assert 'Blueprint' in from_flask_imports, 'Are you importing `Blueprint` from `flask`?'
+    blueprint_from = module_code().find('from_import', lambda node: \
+        node.value[0].value == 'flask' and \
+        'Blueprint' in list(node.targets.map(lambda node: node.value)))
+    assert blueprint_from is not None, \
+        'Are you importing `Blueprint` from `flask` in `admin/__init.py`?'
 
     admin_bp = module_code().find('assign', lambda node: node.target.value == 'admin_bp')
-    assert admin_bp is not None, 'Are you setting the `admin_bp` variable correctly?'
+    assert admin_bp is not None, \
+        'Are you setting the `admin_bp` variable correctly?'
     blueprint_instance = admin_bp.find('atomtrailers', lambda node: node.value[0].value == 'Blueprint')
-    assert blueprint_instance is not None, 'Are you setting the `admin_bp` variable to an instance of `Content`?'
+    assert blueprint_instance is not None, \
+        'Are you setting the `admin_bp` variable to an instance of `Content`?'
     blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
 
-    assert "None:'admin'" in blueprint_args, \
+    url_prefix = "url_prefix:'/admin'" in blueprint_args
+    admin_first = "None:'admin'" in blueprint_args
+    name_second = "None:__name__" in blueprint_args
+    assert admin_first, \
         "Are you passing the Blueprint instance the correct arguments? The first argument should be: `'admin'`."
-    assert "None:__name__" in blueprint_args, \
+    assert name_second, \
         'Are you passing the Blueprint instance the correct arguments? The second argument should be: `__name__`.'
-    assert "url_prefix:'/admin'" in blueprint_args, \
+    assert url_prefix, \
         "Are you passing the Blueprint instance the correct arguments? There should be a url_prefix keyword argument set to `'/admin'`."
 
 @pytest.mark.test_admin_blueprint_imports_module1
 def test_admin_blueprint_imports_module1():
     flask_import = module_code().find('from_import', lambda node: node.value[0].value == 'flask')
-    assert flask_import is not None, 'Are you importing the correct methods and classes from `flask`?'
+    assert flask_import is not None, \
+        'Are you importing the correct methods and classes from `flask`?'
     from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
-    assert 'render_template' in from_flask_imports, 'Are you importing `render_template` from `flask`?'
-    assert 'abort' in from_flask_imports, 'Are you importing `abort` from `flask`?'
+    render_template_import = 'render_template' in from_flask_imports
+    assert render_template_import, \
+        'Are you importing `render_template` from `flask`?'
+    abort_import = 'abort' in from_flask_imports
+    assert abort_import, \
+        'Are you importing `abort` from `flask`?'
 
     module_import = module_code().find('from_import', lambda node: node.find('name', value='models'))
-    assert module_import is not None, 'Are you importing the correct methods and classes from `cms.admin.models`?'
-    model_path = list(module_import.find_all('name').map(lambda node: node.value))
-    assert module_import is not None and \
-        ':'.join(model_path) == 'cms:admin:models', \
+    assert module_import is not None, \
         'Are you importing the correct methods and classes from `cms.admin.models`?'
+    model_path = list(module_import.find_all('name').map(lambda node: node.value))
+    import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
 
-    assert module_import.find('name_as_name', value='Content') is not None, \
+    assert import_path, \
+        'Are you importing the correct methods and classes from `cms.admin.models`?'
+    name_as_name_content = main_module_import.find('name_as_name', value='Content') is not None
+    assert name_as_name_content, \
         'Are you importing the `Content` model class from `cms.admin.models`?'
-    assert module_import.find('name_as_name', value='Type') is not None, \
+
+    name_as_name_type = main_module_import.find('name_as_name', value='Type') is not None
+    assert name_as_name_type, \
         'Are you importing the `Type` model class from `cms.admin.models`?'
-    assert module_import.find('name_as_name', value='Setting') is not None, \
+
+    name_as_name_setting =  main_module_import.find('name_as_name', value='Setting') is not None
+    assert name_as_name_setting, \
         'Are you importing the `Setting` model class from `cms.admin.models`?'
-    assert module_import.find('name_as_name', value='User') is not None, \
+
+    name_as_name_user =  main_module_import.find('name_as_name', value='User') is not None
+    assert name_as_name_user, \
         'Are you importing the `User` model class from `cms.admin.models`?'
 
 @pytest.mark.test_admin_blueprint_move_routes_module1
 def test_admin_blueprint_move_routes_module1():
-    assert module_code().find('def', name='requested_type') is not None, \
+    requested_type = module_code().find('def', name='requested_type')
+    assert requested_type is not None, \
         'Did you move the `requested_type` function from `__init__.py` to `admin/__init__.py`?'
 
     content_route = module_code().find('def', name='content')
     assert content_route is not None, \
-        'Did you move the `content` function from `__init__.py` to `admin/__init__.py`?'
+        'Did you move the `user` function from `__init__.py` to `admin/__init__.py`?'
     content_decorators = content_route.find_all('dotted_name')
-    assert len(content_decorators) == 2, 'Did you move both `content` route decorators to `admin/__init__.py`?'
-    assert str(content_decorators[0]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
-    assert str(content_decorators[1]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
+    content_decorator_count = len(content_decorators) == 2
+    assert content_decorator_count, \
+        'Did you move the `settings` route decorators to `admin/__init__.py`?'
+    content_blueprint_route1 = str(content_decorators[0]) == 'admin_bp.route'
+    content_blueprint_route2 = str(content_decorators[1]) == 'admin_bp.route'
+    assert content_blueprint_route1, \
+        'Have you changed the `@app` decorator to `@admin_ap` on the `content` function?'
+    assert content_blueprint_route2, \
+        'Have you changed the `@app` decorator to `@admin_ap` on the `content` function?'
 
     create_route = module_code().find('def', name='create')
     assert create_route is not None, \
-        'Did you move the `create` function from `__init__.py` to `admin/__init__.py`?'
+        'Did you move the `user` function from `__init__.py` to `admin/__init__.py`?'
     create_decorators = create_route.find_all('dotted_name')
-    assert len(create_decorators) == 1, 'Did you move the `create` route decorators to `admin/__init__.py`?'
-    assert str(create_decorators[0]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
+    create_decorator_count = len(create_decorators) == 1
+    assert create_decorator_count, \
+        'Did you move the `settings` route decorators to `admin/__init__.py`?'
+    create_blueprint_routes = str(create_decorators[0]) == 'admin_bp.route'
+    assert create_blueprint_routes, \
+        'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
 
     users_route = module_code().find('def', name='users')
     assert users_route is not None, \
-        'Did you move the `users` function from `__init__.py` to `admin/__init__.py`?'
+        'Did you move the `user` function from `__init__.py` to `admin/__init__.py`?'
     users_decorators = users_route.find_all('dotted_name')
-    assert len(users_decorators) == 1, 'Did you move the `users` route decorators to `admin/__init__.py`?'
-    assert str(users_decorators[0]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `users` function?'
+    users_decorator_count = len(users_decorators) == 1
+    assert users_decorator_count, \
+        'Did you move the `settings` route decorators to `admin/__init__.py`?'
+    users_blueprint_routes = str(users_decorators[0]) == 'admin_bp.route'
+    assert users_blueprint_routes, \
+        'Have you changed the `@app` decorator to `@admin_ap` on the `users` function?'
 
     settings_route = module_code().find('def', name='settings')
     assert settings_route is not None, \
         'Did you move the `settings` function from `__init__.py` to `admin/__init__.py`?'
     settings_decorators = settings_route.find_all('dotted_name')
-    assert len(settings_decorators) == 1, 'Did you move the `settings` route decorators to `admin/__init__.py`?'
-    assert str(settings_decorators[0]) == 'admin_bp.route', 'Have you changed the `@app` decorator to `@admin_ap` on the `settings` function?'
+    settings_decorator_count = len(settings_decorators) == 1
+    assert settings_decorator_count, \
+        'Did you move the `settings` route decorators to `admin/__init__.py`?'
+    settings_blueprint_routes = str(settings_decorators[0]) == 'admin_bp.route'
+    assert settings_blueprint_routes, \
+        'Have you changed the `@app` decorator to `@admin_ap` on the `settings` function?'
 
-    assert main_module_code().find('def', name='content') is None, \
+    def_content = main_module_code().find('def', name='content')
+    assert def_content is None, \
         'Did you remove the `content` function from `__init__.py`?'
 
-    assert main_module_code().find('def', name='create') is None, \
+    def_create = main_module_code().find('def', name='create') is None
+    assert def_create, \
         'Did you remove the `create` function from `__init__.py`?'
 
-    assert main_module_code().find('def', name='users') is None, \
+    def_users = main_module_code().find('def', name='users') 
+    assert def_users is None, \
         'Did you remove the `users` function from `__init__.py`?'
 
-    assert main_module_code().find('def', name='settings') is None, \
+    def_settings = main_module_code().find('def', name='settings') 
+    assert def_settings is None, \
         'Did you remove the `settings` function from `__init__.py`?'
 
 @pytest.mark.test_cms_module_register_blueprint_module1
 def test_cms_module_register_blueprint_module1():
     bp_import = main_module_code().find('from_import', lambda node: node.find('name_as_name', value='admin_bp'))
-    assert bp_import is not None, 'Are you importing `admin_bp` from `cms.admin`?'
+    assert bp_import is not None, \
+        'Are you importing `admin_bp` from `cms.admin`?'
     model_path = list(bp_import.find_all('name').map(lambda node: node.value))
-    assert bp_import is not None and \
-        ':'.join(model_path) == 'cms:admin', \
+    admin_bp_import = bp_import is not None and ':'.join(model_path) == 'cms:admin'
+    assert admin_bp_import, \
         'Are you importing the `admin_bp` Blueprint from `cms.admin`?'
 
     register_bp_call = main_module_code().find('atomtrailers', lambda node: \
         node.value[0].value == 'app' and \
         node.value[1].value == 'register_blueprint' and \
         node.value[2].type == 'call')
-    assert register_bp_call is not None, 'Are you calling `register_blueprint` on `app`?'
+    assert register_bp_call is not None, \
+        'Are you calling `register_blueprint` on `app`?'
 
     register_blueprint_args = list(register_bp_call.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
-    assert len(register_blueprint_args) == 1, \
+    register_count = len(register_blueprint_args) == 1
+    admin_bp_registered = "None:admin_bp" in register_blueprint_args
+    assert register_count, \
         'Are you only passing one argument to `register_blueprint`?'
-    assert "None:admin_bp" in register_blueprint_args, \
+    assert admin_bp_registered, \
         'Are you passing the Blueprint instance to should be `register_blueprint`?'
 
 @pytest.mark.test_admin_blueprint_template_folder_module1
 def test_admin_blueprint_template_folder_module1():
     admin_bp = module_code().find('assign', lambda node: node.target.value == 'admin_bp')
-    assert admin_bp is not None, 'Are you setting the `admin_bp` variable correctly?'
+    assert admin_bp is not None, \
+        'Are you setting the `admin_bp` variable correctly?'
     blueprint_instance = admin_bp.find('atomtrailers', lambda node: node.value[0].value == 'Blueprint')
-    assert blueprint_instance is not None, 'Are you setting the `admin_bp` variable to an instance of `Content`?'
+    assert blueprint_instance is not None, \
+        'Are you setting the `admin_bp` variable to an instance of `Content`?'
     blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
-    assert "template_folder:'templates'" in blueprint_args, \
+    blueprint_template_folder = "template_folder:'templates'" in blueprint_args
+    assert blueprint_template_folder, \
         "Are you passing the Blueprint instance the correct arguments? There should be a url_prefix keyword argument set to `'/admin'`."
 
     admin_templates = admin / 'templates'
-    assert Path.exists(admin_templates) and Path.is_dir(admin_templates), \
+    admin_templates_exists = Path.exists(admin_templates) and Path.is_dir(admin_templates)
+    assert admin_templates_exists, \
         'Have you created a `templates` folder in the `admin` blueprint folder?'
 
     move = admin_templates / 'admin'
-    assert Path.exists(move) and Path.is_dir(move), \
+    move_exists = Path.exists(move) and Path.is_dir(move)
+    assert move_exists, \
         'Have you move the `admin` folder from the root `templates` folder to the `admin` blueprint `templates` folder?'
 
-    content      = move / 'content.html'
-    content_form = move / 'content_form.html'
-    layout       = move / 'layout.html'
-    settings     = move / 'settings.html'
-    users        = move / 'users.html'
-    assert Path.exists(content) and Path.is_file(content), \
+    content        = move / 'content.html'
+    content_exists = Path.exists(content) and Path.is_file(content)
+    content_form   = move / 'content_form.html'
+    content_form_exists = Path.exists(content_form) and Path.is_file(content_form)
+    layout         = move / 'layout.html'
+    layout_exists = Path.exists(layout) and Path.is_file(layout)
+    settings       = move / 'settings.html'
+    settings_exists = Path.exists(settings) and Path.is_file(settings)
+    users          = move / 'users.html'
+    users_exists = Path.exists(users) and Path.is_file(users)
+    assert content_exists, \
         'Is the `content.html` template file in the `cms/admin/templates/admin` folder?'
-    assert Path.exists(content_form) and Path.is_file(content_form), \
+    assert content_form_exists, \
         'Is the `content_form.html` template file in the `cms/admin/templates/admin` folder?'
-    assert Path.exists(layout) and Path.is_file(layout), \
+    assert layout_exists, \
         'Is the `layout.html` template file in the `cms/admin/templates/admin` folder?'
-    assert Path.exists(settings) and Path.is_file(settings), \
+    assert settings_exists, \
         'Is the `settings.html` template file in the `cms/admin/templates/admin` folder?'
-    assert Path.exists(users) and Path.is_file(users), \
+    assert users_exists, \
         'Is the `users.html` template file in the `cms/admin/templates/admin` folder?'
 
     links = template_functions('layout', 'url_for')
-    assert 'admin.content:type:page' in links, \
+    page_link = 'admin.content:type:page' in links
+    post_link = 'admin.content:type:post' in links
+    partial_link = 'admin.content:type:partial' in links
+    template_link = 'admin.content:type:template' in links
+    users_link = 'admin.users:' in links
+    settings_link = 'admin.settings:' in links
+    assert page_link, \
         'Have you updated the `url_for` for `Pages` in `admin/templates/admin/layout.html`?'
-    assert 'admin.content:type:post' in links, \
+    assert post_link, \
         'Have you updated the `url_for` for `Posts` in `admin/templates/admin/layout.html`?'
-    assert 'admin.content:type:partial' in links, \
+    assert partial_link, \
         'Have you updated the `url_for` for `Partial` in `admin/templates/admin/layout.html`?'
-    assert 'admin.content:type:template' in links, \
+    assert template_link, \
         'Have you updated the `url_for` for `Templates` in `admin/templates/admin/layout.html`?'
-    assert 'admin.users:' in links, \
+    assert users_link, \
         'Have you updated the `url_for` for `Users` in `admin/templates/admin/layout.html`?'
-    assert 'admin.settings:' in links, \
+    assert settings_link, \
         'Have you updated the `url_for` for `Settings` in `admin/templates/admin/layout.html`?'
