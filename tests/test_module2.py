@@ -46,8 +46,8 @@ def get_form_data(route, name):
         str(node.value[2]).replace("'", '"') == '["{}"]'.format(name.replace('content.', ''))) is not None, \
         'Are you setting the `{}` varaible to request.form["{}"]?'.format(name.replace('content.', ''))
 
-@pytest.mark.test_add_from_controls_module2
-def test_add_from_controls_module2():
+@pytest.mark.test_template_add_from_controls_module2
+def test_template_add_from_controls_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     assert admin_exists and admin_templates_exists, \
         'Have you created a `templates` folder in the `admin` blueprint folder?'
@@ -87,8 +87,8 @@ def test_add_from_controls_module2():
     assert 'admin.content:type:type_name' in links, \
         'Do you have an `href` with a call to `url_for` pointing to `admin.content` passing in `type=type_name`?'
 
-@pytest.mark.test_adjust_create_route_data_module2
-def test_adjust_create_route_data_module2():
+@pytest.mark.test_create_route_methods_module2
+def test_create_route_methods_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     strings = list(get_methods_keyword('create').find_all('string').map(lambda node: node.value.replace("'", '"')))
     assert '"GET"' in strings and '"POST"' in strings, \
@@ -96,8 +96,8 @@ def test_adjust_create_route_data_module2():
     assert str(get_request_method('create', False)).find('POST'), 'Are you testing if the request method is `POST`?'
     get_form_data('create', 'title')
 
-@pytest.mark.test_form_data_module2
-def test_form_data_module2():
+@pytest.mark.test_create_route_form_data_module2
+def test_create_route_form_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     get_form_data('create', 'slug')
     get_form_data('create', 'type_id')
@@ -107,8 +107,8 @@ def test_form_data_module2():
     assert error is not None, 'Do you have a variable named `error`?'
     assert error.value.to_python() is None, 'Are you setting the `error` variable correctly?'
 
-@pytest.mark.test_validate_create_data_module2
-def test_validate_create_data_module2():
+@pytest.mark.test_create_route_validate_data_module2
+def test_create_route_validate_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
 
     title_error = get_request_method('create').find('unitary_operator', lambda node: node.target.value == 'title')
@@ -125,8 +125,8 @@ def test_validate_create_data_module2():
     assert type_error_message is not None and type_error_message.value.type == 'string', \
         'Are you setting the `error` variable to the appropriate `string` in the `elif` statement.'
 
-@pytest.mark.test_add_data_module2
-def test_add_data_module2():
+@pytest.mark.test_create_route_insert_data_module2
+def test_create_route_insert_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     error_check = get_request_method('create').find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
@@ -193,8 +193,8 @@ def test_add_data_module2():
         node.value[1].value[0].value.value == 'error') is not None, \
         'Are you flashing an `error` at the end of the `request.method` `if`?'
 
-@pytest.mark.test_add_edit_route_module2
-def test_add_edit_route_module2():
+@pytest.mark.test_edit_route_module2
+def test_edit_route_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     assert get_route('edit').find('def_argument', lambda node: node.target.value == 'id') is not None, \
         'Is the `edit` route function accepting an argument of `id`?'
@@ -276,8 +276,8 @@ def test_edit_route_render_template_module2():
     assert len(return_render_args) == 8, \
         'Are you passing the correct number of keyword arguments to the `render_template()` function?'
 
-@pytest.mark.test_populate_form_controls_module2
-def test_populate_form_controls_module2():
+@pytest.mark.test_template_populate_form_controls_module2
+def test_template_populate_form_controls_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     content_form_filters = filters('content_form')
     assert 'item_title.default...None.None' in content_form_filters, \
@@ -287,8 +287,8 @@ def test_populate_form_controls_module2():
     assert 'body.default...None.None' in content_form_filters, \
         'Have you given the `body` `<textarea>` a `value` attribute and set it to the `body` template variable? Make sure you have added the `default(\'\')` filter.'
 
-@pytest.mark.test_edit_form_data_module2
-def test_edit_form_data_module2():
+@pytest.mark.test_edit_route_form_data_module2
+def test_edit_route_form_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     assert str(get_request_method('edit', False)).find('POST'), 'Are you testing if the request method is `POST`?'
     get_form_data('edit', 'content.title')
@@ -300,8 +300,8 @@ def test_edit_form_data_module2():
     assert error is not None, 'Do you have a variable named `error`?'
     assert error.value.to_python() is None, 'Are you setting the `error` variable correctly?'
 
-@pytest.mark.test_validate_edit_data_module2
-def test_validate_edit_data_module2():
+@pytest.mark.test_edit_route_validate_data_module2
+def test_edit_route_validate_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     title_error = get_request_method('edit').find('unitary_operator', lambda node: \
         node.target.value[0].value == 'request' and \
@@ -315,8 +315,8 @@ def test_validate_edit_data_module2():
     assert title_error_message is not None and title_error_message.value.type == 'string', \
         'Are you setting the `error` variable to the appropriate `string` in the `if` statement.'
 
-@pytest.mark.test_update_data_module2
-def test_update_data_module2():
+@pytest.mark.test_edit_route_update_data_module2
+def test_edit_route_update_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     error_check = get_request_method('edit').find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
