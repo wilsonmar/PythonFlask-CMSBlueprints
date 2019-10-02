@@ -140,7 +140,7 @@ def test_create_route_insert_data_module2():
     content = error_check_if.find('assign', lambda node: node.target.value == 'content')
     assert content is not None, 'Are you setting the `content` variable correctly?'
     content_instance = content.find('atomtrailers', lambda node: node.value[0].value == 'Content')
-    assert content_instance is not None, 'Are you setting the `content` to an instance of `Content`?'
+    assert content_instance is not None, 'Are you setting the `content` variable to an instance of `Content`?'
     content_args = list(content_instance.find_all('call_argument').map(lambda node: node.target.value + ':' + node.value.value))
 
     assert 'title:title' in content_args, \
