@@ -16,20 +16,27 @@ admin_templates_exists = Path.exists(admin_templates) and Path.is_dir(admin_temp
 content_form_exists = Path.exists(content_form) and Path.is_file(content_form)
 content_form_template = template_data('content_form')
 
-with open(admin_module.resolve(), 'r') as admin_module_source_code:
-    admin_module_code = RedBaron(admin_module_source_code.read())
+def admin_module_code():
+    with open(admin_module.resolve(), 'r') as admin_module_source_code:
+        return RedBaron(admin_module_source_code.read())
 
 def get_route(route):
-    route_function = admin_module_code.find('def', name=route)
+    assert admin_exists, 'Have you created the `admin` blueprint folder?'
+    assert admin_module_exists, 'Have you added the `__init__.py` file to the `admin` blueprint folder?'
+    route_function = admin_module_code().find('def', name=route)
     assert route_function is not None, 'Does the `{}` route function exist in `admin/__init__.py`?'.format(route)
     return route_function
 
 def get_methods_keyword(route):
+    assert admin_exists, 'Have you created the `admin` blueprint folder?'
+    assert admin_module_exists, 'Have you added the `__init__.py` file to the `admin` blueprint folder?'
     methods_keyword = get_route(route).find_all('call_argument', lambda node: str(node.target) == 'methods')
     assert methods_keyword is not None, 'Does the `{}` route have a keyword argument of `methods`?'.format(name)
     return methods_keyword
 
 def get_request_method(route, parent=True):
+    assert admin_exists, 'Have you created the `admin` blueprint folder?'
+    assert admin_module_exists, 'Have you added the `__init__.py` file to the `admin` blueprint folder?'
     request_method = get_route(route).find('comparison', lambda node: \
         'request.method' in [str(node.first), str(node.second)])
     assert request_method is not None, 'Do you have an `if` statement that tests `request.method`?'
