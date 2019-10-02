@@ -21,22 +21,16 @@ def admin_module_code():
         return RedBaron(admin_module_source_code.read())
 
 def get_route(route):
-    assert admin_exists, 'Have you created the `admin` blueprint folder?'
-    assert admin_module_exists, 'Have you added the `__init__.py` file to the `admin` blueprint folder?'
     route_function = admin_module_code().find('def', name=route)
     assert route_function is not None, 'Does the `{}` route function exist in `admin/__init__.py`?'.format(route)
     return route_function
 
 def get_methods_keyword(route):
-    assert admin_exists, 'Have you created the `admin` blueprint folder?'
-    assert admin_module_exists, 'Have you added the `__init__.py` file to the `admin` blueprint folder?'
     methods_keyword = get_route(route).find_all('call_argument', lambda node: str(node.target) == 'methods')
     assert methods_keyword is not None, 'Does the `{}` route have a keyword argument of `methods`?'.format(name)
     return methods_keyword
 
 def get_request_method(route, parent=True):
-    assert admin_exists, 'Have you created the `admin` blueprint folder?'
-    assert admin_module_exists, 'Have you added the `__init__.py` file to the `admin` blueprint folder?'
     request_method = get_route(route).find('comparison', lambda node: \
         'request.method' in [str(node.first), str(node.second)])
     assert request_method is not None, 'Do you have an `if` statement that tests `request.method`?'
@@ -52,13 +46,9 @@ def get_form_data(route, name):
         str(node.value[2]).replace("'", '"') == '["{}"]'.format(name.replace('content.', ''))) is not None, \
         'Are you setting the `{}` varaible to request.form["{}"]?'.format(name.replace('content.', ''))
 
-create_request_method  = get_request_method('create')
-
-edit_route = get_route('edit')
-edit_request_method  = get_request_method('edit')
-
 @pytest.mark.test_add_from_controls_module2
 def test_add_from_controls_module2():
+    assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
     assert admin_exists and admin_templates_exists, \
         'Have you created a `templates` folder in the `admin` blueprint folder?'
     assert content_form_exists, \
@@ -113,7 +103,7 @@ def test_form_data_module2():
     get_form_data('create', 'type_id')
     get_form_data('create', 'body')
 
-    error = create_request_method.find('assign', lambda node: node.target.value == 'error')
+    error = get_request_method('create').find('assign', lambda node: node.target.value == 'error')
     assert error is not None, 'Do you have a variable named `error`?'
     assert error.value.to_python() is None, 'Are you setting the `error` variable correctly?'
 
@@ -121,14 +111,14 @@ def test_form_data_module2():
 def test_validate_create_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
 
-    title_error = create_request_method.find('unitary_operator', lambda node: node.target.value == 'title')
+    title_error = get_request_method('create').find('unitary_operator', lambda node: node.target.value == 'title')
     assert title_error is not None and title_error.parent is not None and title_error.parent.type == 'if', \
         'Do you have an `if` statement that tests if `title` is `not` empty.'
     title_error_message = title_error.parent.find('assign', lambda node: node.target.value == 'error')
     assert title_error_message is not None and title_error_message.value.type == 'string', \
         'Are you setting the `error` variable to the appropriate `string` in the `if` statement.'
 
-    type_error = create_request_method.find('unitary_operator', lambda node: node.target.value == 'type')
+    type_error = get_request_method('create').find('unitary_operator', lambda node: node.target.value == 'type')
     assert type_error is not None and type_error.parent is not None and type_error.parent.type == 'elif', \
         'Do you have an `if` statement that tests if `type` is `not` empty.'
     type_error_message = type_error.parent.find('assign', lambda node: node.target.value == 'error')
@@ -138,7 +128,7 @@ def test_validate_create_data_module2():
 @pytest.mark.test_add_data_module2
 def test_add_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
-    error_check = create_request_method.find('comparison', lambda node: \
+    error_check = get_request_method('create').find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
     assert error_check is not None and error_check.parent.type == 'if' and \
         ((error_check.first.value == 'error' and error_check.second.value == 'None') or \
@@ -197,7 +187,7 @@ def test_add_data_module2():
     assert  'type:type' in url_for_args, \
         'Are you passing a `type` keyword argument set to `type` to the `url_for()` function?'
 
-    assert create_request_method.find_all('atomtrailers', lambda node: \
+    assert get_request_method('create').find_all('atomtrailers', lambda node: \
         node.value[0].value == 'flash' and \
         node.value[1].type == 'call' and \
         node.value[1].value[0].value.value == 'error') is not None, \
@@ -206,10 +196,10 @@ def test_add_data_module2():
 @pytest.mark.test_add_edit_route_module2
 def test_add_edit_route_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
-    assert edit_route.find('def_argument', lambda node: node.target.value == 'id') is not None, \
+    assert get_route('edit').find('def_argument', lambda node: node.target.value == 'id') is not None, \
         'Is the `edit` route function accepting an argument of `id`?'
 
-    content = edit_route.find('assign', lambda node: node.target.value == 'content')
+    content = get_route('edit').find('assign', lambda node: node.target.value == 'content')
     assert content is not None, 'Are you setting the `content` variable correctly?'
     query_call = content.find('atomtrailers', lambda node: \
         node.value[0].value == 'Content' and \
@@ -220,7 +210,7 @@ def test_add_edit_route_module2():
         )
     assert query_call is not None, 'Are you calling the `Content.query.get_or_404()` function and are you passing in the correct argument?'
 
-    edit_decorator = edit_route.find('dotted_name', lambda node: \
+    edit_decorator = get_route('edit').find('dotted_name', lambda node: \
         node.value[0].value == 'admin_bp' and \
         node.value[1].type == 'dot' and \
         node.value[2].value == 'route' and \
@@ -236,7 +226,7 @@ def test_add_edit_route_module2():
 @pytest.mark.test_edit_route_render_template_module2
 def test_edit_route_render_template_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
-    type = edit_route.find('assign', lambda node: node.target.value == 'type')
+    type = get_route('edit').find('assign', lambda node: node.target.value == 'type')
     assert type is not None, 'Are you setting the `type` variable correctly?'
     get_call = type.find('atomtrailers', lambda node: \
         node.value[0].value == 'Type' and \
@@ -250,7 +240,7 @@ def test_edit_route_render_template_module2():
         node.value[1].value == 'form' and \
         node.value[2].value.value.replace("'", '"') == '"type_id"') is not None, \
         'Are you passing the correct argument to the `Type.query.get()` function?'
-    types = edit_route.find('assign', lambda node: node.target.value == 'types')
+    types = get_route('edit').find('assign', lambda node: node.target.value == 'types')
     assert types is not None, 'Are you setting the `types` variable correctly?'
     all_call = types.find('atomtrailers', lambda node: \
         node.value[0].value == 'Type' and \
@@ -260,7 +250,7 @@ def test_edit_route_render_template_module2():
         )
     assert all_call is not None, 'Are you calling the `Type.query.all()` function and assigning the result to `types`?'
 
-    return_render = edit_route.find('return', lambda node: \
+    return_render = get_route('edit').find('return', lambda node: \
         node.value[0].value == 'render_template' and \
         node.value[1].type == 'call')
     assert return_render is not None, 'Are you returning a call to the `render_template()` function?'
@@ -306,14 +296,14 @@ def test_edit_form_data_module2():
     get_form_data('edit', 'content.type_id')
     get_form_data('edit', 'content.body')
 
-    error = create_request_method.find('assign', lambda node: node.target.value == 'error')
+    error = get_request_method('create').find('assign', lambda node: node.target.value == 'error')
     assert error is not None, 'Do you have a variable named `error`?'
     assert error.value.to_python() is None, 'Are you setting the `error` variable correctly?'
 
 @pytest.mark.test_validate_edit_data_module2
 def test_validate_edit_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
-    title_error = edit_request_method.find('unitary_operator', lambda node: \
+    title_error = get_request_method('edit').find('unitary_operator', lambda node: \
         node.target.value[0].value == 'request' and \
         node.target.value[1].value == 'form' and \
         len(node.target.value) == 3 and \
@@ -328,7 +318,7 @@ def test_validate_edit_data_module2():
 @pytest.mark.test_update_data_module2
 def test_update_data_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
-    error_check = edit_request_method.find('comparison', lambda node: \
+    error_check = get_request_method('edit').find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
     assert error_check is not None and error_check.parent.type == 'if' and \
         ((error_check.first.value == 'error' and error_check.second.value == 'None') or \
@@ -361,7 +351,7 @@ def test_update_data_module2():
     assert  'type:type.name' in url_for_args, \
         'Are you passing a `type` keyword argument set to `type` to the `url_for()` function?'
 
-    assert create_request_method.find_all('atomtrailers', lambda node: \
+    assert get_request_method('create').find_all('atomtrailers', lambda node: \
         node.value[0].value == 'flash' and \
         node.value[1].type == 'call' and \
         node.value[1].value[0].value.value == 'error') is not None, \
