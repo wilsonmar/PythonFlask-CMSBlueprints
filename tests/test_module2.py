@@ -282,7 +282,13 @@ def test_edit_route_render_template_module2():
 @pytest.mark.test_populate_form_controls_module2
 def test_populate_form_controls_module2():
     assert admin_module_exists, 'Have you created the `admin/__init__.py` file?'
-    assert False, ''
+    content_form_filters = filters('content_form')
+    assert 'item_title.default...None.None' in content_form_filters, \
+        'Have you given the `title` `<input>` a `value` attribute and set it to the `item_title` template variable? Make sure you have added the `default(\'\')` filter.'
+    assert 'slug.default...None.None' in content_form_filters, \
+        'Have you given the `slug` `<input>` a `value` attribute and set it to the `slug` template variable? Make sure you have added the `default(\'\')` filter.'
+    assert 'body.default...None.None' in content_form_filters, \
+        'Have you given the `body` `<textarea>` a `value` attribute and set it to the `body` template variable? Make sure you have added the `default(\'\')` filter.'
 
 @pytest.mark.test_edit_form_data_module2
 def test_edit_form_data_module2():

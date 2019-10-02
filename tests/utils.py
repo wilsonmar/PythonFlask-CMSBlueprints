@@ -77,6 +77,12 @@ def is_for(node):
 def if_statements(name):
     return parsed_content(name).find(nodes.CondExpr)
 
+def filters(name):
+    filters = []
+    for node in parsed_content(name).find_all(nodes.Filter):
+        filters.append(simplify(node))
+    return filters
+
 def for_statement(name):
     for_loop = parsed_content(name).find(nodes.For)
     for node in for_loop.find_all(nodes.Getattr):
