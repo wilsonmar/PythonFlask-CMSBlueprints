@@ -399,6 +399,17 @@ def test_edit_route_form_data_module2():
     get_form_data('edit', 'content.type_id')
     get_form_data('edit', 'content.body')
 
+    content_updated_at = get_request_method(route).find('assign', lambda node: str(node.target) == 'content.updated_at')
+    assert content_updated_at is not None, \
+        'Do you have a variable named `content_updated_at`?'
+    right = variable.find('atomtrailers', lambda node: \
+        node.value[0].value == 'datetime' and \
+        node.value[1].value == 'utcnow' and \
+        len(node.value) == 3 and \
+        node.value[2].type == 'call') is not None
+    assert right, \
+        'Are you setting `content.updated_at` to the current date?'
+
     error = get_request_method('create').find('assign', lambda node: node.target.value == 'error')
     assert error is not None, \
         'Do you have a variable named `error`?'
