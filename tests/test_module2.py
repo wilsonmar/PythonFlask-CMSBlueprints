@@ -337,10 +337,10 @@ def test_edit_route_queries_module2():
         )
     assert get_call is not None, \
         'Are you calling the `Type.query.get()` function and assigning the result to `type`?'
+
     get_call_argument = get_call.find('call_argument', lambda node: \
-        node.value[0].value == 'request' and \
-        node.value[1].value == 'form' and \
-        node.value[2].value.value.replace("'", '"') == '"type_id"') is not None
+        node.value[0].value == 'content' and \
+        node.value[1].value == 'type_id') is not None
     assert get_call_argument, \
         'Are you passing the correct argument to the `Type.query.get()` function?'
 
