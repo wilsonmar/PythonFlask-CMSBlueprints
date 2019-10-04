@@ -9,11 +9,13 @@ admin = Path.cwd() / 'cms' / 'admin'
 admin_module = admin / '__init__.py'
 admin_templates = admin / 'templates' / 'admin'
 content_form = admin_templates / 'content_form.html'
+content_path = admin_templates / 'content.html'
 
 admin_exists = Path.exists(admin) and Path.is_dir(admin)
 admin_module_exists = Path.exists(admin_module) and Path.is_file(admin_module)
 admin_templates_exists = Path.exists(admin_templates) and Path.is_dir(admin_templates)
 content_form_exists = Path.exists(content_form) and Path.is_file(content_form)
+content_exists = Path.exists(content_path) and Path.is_file(content_path)
 content_form_template = template_data('content_form')
 
 def admin_module_code():
@@ -422,8 +424,11 @@ def test_template_populate_form_controls_module2():
     assert body_filter, \
         'Is _body_ `<textarea>` text content set to `body`? Have you added the `default(\'\')` filter?'
 
-    links = 'admin.edit:id:item.id' in template_functions('content', 'url_for')
-    assert links, \
+    assert content_exists, \
+        'Is the `content.html` file in the `admin/templates` folder?'
+
+    content_url_for = 'admin.edit:id:item.id' in template_functions('content', 'url_for')
+    assert content_url_for, \
         'Do you have an `href` with a call to `url_for` pointing to `admin.edit` passing in `id=item.id`?'
 
 @pytest.mark.test_edit_route_form_data_module2
