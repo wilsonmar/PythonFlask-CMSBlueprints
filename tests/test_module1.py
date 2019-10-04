@@ -104,7 +104,7 @@ def test_admin_blueprint_move_model_classes_module1():
 
     main_module_import = main_module_code().find('from_import', lambda node: node.find('name', value='models'))
     assert main_module_import is not None, \
-        'Are you importing the correct methods and classes from `cms.admin.models` in `__init__.py`?'
+        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__.py`?'
     model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
     import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
 
@@ -242,7 +242,7 @@ def test_admin_blueprint_imports_module1():
     model_path = list(module_import.find_all('name').map(lambda node: node.value))
     import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
     assert import_path, \
-        'Are you importing the correct methods and classes from `cms.admin.models`?'
+        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__.py`?'
 
     name_as_name_content = main_module_import.find('name_as_name', value='Content') is not None
     assert name_as_name_content, \
