@@ -321,8 +321,8 @@ def test_edit_route_module2():
     assert post_check, \
         'Have you added the `methods` keyword argument to the `edit` route allowing `POST` and `GET`?'
 
-@pytest.mark.test_edit_route_render_template_module2
-def test_edit_route_render_template_module2():
+@pytest.mark.test_edit_route_queries_module2
+def test_edit_route_queries_module2():
     assert admin_module_exists, \
         'Have you created the `admin/__init__.py` file?'
 
@@ -355,6 +355,11 @@ def test_edit_route_render_template_module2():
         )
     assert all_call is not None, \
         'Are you calling the `Type.query.all()` function and assigning the result to `types`?'
+
+@pytest.mark.test_edit_route_render_template_module2
+def test_edit_route_render_template_module2():
+    assert admin_module_exists, \
+        'Have you created the `admin/__init__.py` file?'
 
     return_render = get_route('edit').find('return', lambda node: \
         node.value[0].value == 'render_template' and \
