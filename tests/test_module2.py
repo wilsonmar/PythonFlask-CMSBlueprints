@@ -422,6 +422,10 @@ def test_template_populate_form_controls_module2():
     assert body_filter, \
         'Is _body_ `<textarea>` text content set to `body`? Have you added the `default(\'\')` filter?'
 
+    links = 'admin.edit:id:item.id' in template_functions('content', 'url_for')
+    assert links, \
+        'Do you have an `href` with a call to `url_for` pointing to `admin.edit` passing in `id=item.id`?'
+
 @pytest.mark.test_edit_route_form_data_module2
 def test_edit_route_form_data_module2():
     assert admin_module_exists, \
