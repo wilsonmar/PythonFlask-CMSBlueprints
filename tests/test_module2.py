@@ -242,6 +242,20 @@ def test_create_route_insert_data_module2():
     assert commit_call is not None, \
         'Are you calling the `db.session.commit()` function?'
 
+@pytest.mark.test_create_route_redirect_module2
+def test_create_route_redirect_module2():
+    assert admin_module_exists, \
+        'Have you created the `admin/__init__.py` file?'
+    error_check = get_request_method('create').find('comparison', lambda node: \
+        'error' in [str(node.first), str(node.second)])
+    error_check_exists = error_check is not None and error_check.parent.type == 'if' and \
+        ((error_check.first.value == 'error' and error_check.second.value == 'None') or \
+        (error_check.first.value == 'None' and error_check.second.value == 'error')) and \
+        (error_check.value.first == '==' or error_check.value.first == 'is')
+    assert error_check_exists, \
+        'Do you have an if statment that is checking if `error` is `None`?'
+    error_check_if = error_check.parent
+
     return_redirect = error_check_if.find('return', lambda node: \
         node.value[0].value == 'redirect' and \
         node.value[1].type == 'call')
