@@ -10,7 +10,7 @@ This project is design to be completed on [Pluralsight](https://pluralsight.com)
 
 ## Installation
 
-## Windows
+### Windows
 Open a command prompt or powershell and run the following commands, replacing 'project-root' with the path to the root folder of the project.
 ```
 > cd 'project-root'
@@ -19,7 +19,7 @@ Open a command prompt or powershell and run the following commands, replacing 'p
 > pip install -r requirements.txt
 ```
 
-## macOS
+### macOS
 Open a terminal and run the following commands, replacing 'project-root' with the path to the root folder of the cloned Project repo.
 ```
 $ cd 'project-root'
