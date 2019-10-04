@@ -36,9 +36,6 @@ def test_admin_blueprint_folder_structure_module1():
         'Have you created the `admin` blueprint folder?'
     assert module_exists, \
         'Have you added the `__init__.py` file to the `admin` blueprint folder?'
-
-@pytest.mark.test_admin_blueprint_models_file_module1
-def test_admin_blueprint_models_file_module1():
     assert models_exists, \
         'Have you added the `models.py` file to the `admin` blueprint folder?'
 
