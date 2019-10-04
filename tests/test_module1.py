@@ -346,7 +346,7 @@ def test_cms_module_register_blueprint_module1():
 
     bp_import = main_module_code().find('from_import', lambda node: node.find('name_as_name', value='admin_bp'))
     assert bp_import is not None, \
-        'Are you importing `admin_bp` from `cms.admin`?'
+        'Are you importing `admin_bp` from `cms.admin` in `cms/__init__.py`?'
 
     model_path = list(bp_import.find_all('name').map(lambda node: node.value))
     admin_bp_import = bp_import is not None and ':'.join(model_path) == 'cms:admin'
@@ -384,7 +384,7 @@ def test_admin_blueprint_template_folder_module1():
     blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
     blueprint_template_folder = "template_folder:'templates'" in blueprint_args
     assert blueprint_template_folder, \
-        "Are you passing the Blueprint instance the correct arguments? There should be a url_prefix keyword argument set to `'/admin'`."
+        "Are you passing the Blueprint instance the correct arguments? There should be a `template_folder` keyword argument set to `'/admin'`."
 
     admin_templates = admin / 'templates'
     admin_templates_exists = Path.exists(admin_templates) and Path.is_dir(admin_templates)
