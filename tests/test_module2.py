@@ -72,13 +72,14 @@ def test_template_add_from_controls_module2():
     assert body_exists, \
         'Have you added an `<textarea>` with the correct attributes to the `content` control `<div>`?'
 
-    submit_exists = len(content_form_template.select('input[type="submit"][value="Submit"]')) == 1
-    assert submit_exists, \
-        'Have you added an `<input>` with the correct attributes to the first `is-grouped` control `<div>`?'
-
-    cancel_exists = len(content_form_template.select('a.button.is-text')) == 1
-    assert cancel_exists, \
-        'Have you added an `<a>` with the correct attributes to the second `is-grouped` control `<div>`?'
+@pytest.mark.test_template_type_dropdown_module2
+def test_template_type_dropdown_module2():
+    assert admin_module_exists, \
+        'Have you created the `admin/__init__.py` file?'
+    assert admin_exists and admin_templates_exists, \
+        'Have you created a `templates` folder in the `admin` blueprint folder?'
+    assert content_form_exists, \
+        'Is the `content_form.html` file in the `admin/templates` folder?'
 
     select_exists = len(content_form_template.select('select[name="type_id"]')) == 1
     assert select_exists, \
@@ -108,6 +109,23 @@ def test_template_add_from_controls_module2():
     type_name_exists = simplify(select_code(select_template_code[0], '>', '</option>')[0]) == 'type.name'
     assert type_name_exists, \
         'Are you adding `type.name` as the option name?'
+
+@pytest.mark.test_template_buttons_module2
+def test_template_buttons_module2():
+    assert admin_module_exists, \
+        'Have you created the `admin/__init__.py` file?'
+    assert admin_exists and admin_templates_exists, \
+        'Have you created a `templates` folder in the `admin` blueprint folder?'
+    assert content_form_exists, \
+        'Is the `content_form.html` file in the `admin/templates` folder?'
+
+    submit_exists = len(content_form_template.select('input[type="submit"][value="Submit"]')) == 1
+    assert submit_exists, \
+        'Have you added an `<input>` with the correct attributes to the first `is-grouped` control `<div>`?'
+
+    cancel_exists = len(content_form_template.select('a.button.is-text')) == 1
+    assert cancel_exists, \
+        'Have you added an `<a>` with the correct attributes to the second `is-grouped` control `<div>`?'
 
     links = 'admin.content:type:type_name' in template_functions('content_form', 'url_for')
     assert links, \
