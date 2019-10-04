@@ -104,7 +104,7 @@ def test_admin_blueprint_move_model_classes_module1():
 
     main_module_import = main_module_code().find('from_import', lambda node: node.find('name', value='models'))
     assert main_module_import is not None, \
-        'Are you importing the correct methods and classes from `cms.admin.models`?'
+        'Are you importing the correct methods and classes from `cms.admin.models` in `__init__.py`?'
     model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
     import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
 
@@ -193,7 +193,7 @@ def test_admin_blueprint_create_blueprint_module1():
 
     blueprint_from = module_code().find('from_import', lambda node: \
         node.value[0].value == 'flask' and \
-        'Blueprint' in list(node.targets.map(lambda node: node.value)))
+        'Blueprint' in list(node.targets.map(lambda node: str(node))))
     assert blueprint_from is not None, \
         'Are you importing `Blueprint` from `flask` in `admin/__init.py`?'
 
