@@ -10,8 +10,8 @@ This project is design to be completed on [Pluralsight](https://pluralsight.com)
 
 ## Installation
 
-## Windows 
-Open a command prompt or powershell and run the following commands, replacing 'project-root' with the path to the root folder of the cloned Project repo. 
+## Windows
+Open a command prompt or powershell and run the following commands, replacing 'project-root' with the path to the root folder of the project.
 ```
 > cd 'project-root'
 > python -m venv venv
