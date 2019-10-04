@@ -240,23 +240,23 @@ def test_admin_blueprint_imports_module1():
     assert module_import is not None, \
         'Are you importing the correct methods and classes from `cms.admin.models`?'
     model_path = list(module_import.find_all('name').map(lambda node: node.value))
-    import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
+    import_path = module_import is not None and ':'.join(model_path) == 'cms:admin:models'
     assert import_path, \
         'Are you importing the correct methods and classes from `cms.admin.models` in `admin/__init__.py`?'
 
-    name_as_name_content = main_module_import.find('name_as_name', value='Content') is not None
+    name_as_name_content = module_import.find('name_as_name', value='Content') is not None
     assert name_as_name_content, \
         'Are you importing the `Content` model class from `cms.admin.models` in `admin/__init__.py`?'
 
-    name_as_name_type = main_module_import.find('name_as_name', value='Type') is not None
+    name_as_name_type = module_import.find('name_as_name', value='Type') is not None
     assert name_as_name_type, \
         'Are you importing the `Type` model class from `cms.admin.models` in `admin/__init__.py`?'
 
-    name_as_name_setting =  main_module_import.find('name_as_name', value='Setting') is not None
+    name_as_name_setting =  module_import.find('name_as_name', value='Setting') is not None
     assert name_as_name_setting, \
         'Are you importing the `Setting` model class from `cms.admin.models` in `admin/__init__.py`?'
 
-    name_as_name_user =  main_module_import.find('name_as_name', value='User') is not None
+    name_as_name_user =  module_import.find('name_as_name', value='User') is not None
     assert name_as_name_user, \
         'Are you importing the `User` model class from `cms.admin.models` in `admin/__init__.py`?'
 
