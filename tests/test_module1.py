@@ -129,8 +129,8 @@ def test_admin_blueprint_move_model_classes_module1():
     assert name_as_name_user, \
         'Are you importing the `User` model class from `cms.admin.models` in `cms/__init__.py`?'
 
-@pytest.mark.test_cms_module_remove_imports_module1
-def test_cms_module_remove_imports_module1():
+@pytest.mark.test_cms_module_import_db_module1
+def test_cms_module_import_db_module1():
     assert admin_exists, \
         'Have you created the `admin` blueprint folder?'
     assert main_module_exists, \
@@ -143,27 +143,6 @@ def test_cms_module_remove_imports_module1():
         node.parent.target.value == 'db') is None
     assert db_assignment, \
         'Have you removed the `SQLAlchemy` instance named `db` from `cms/__init__.py`?'
-
-    main_import_sql = main_module_code().find('name', lambda node: \
-        node.value == 'flask_sqlalchemy' and \
-        node.parent.type == 'from_import' and \
-        node.parent.targets[0].value == 'SQLAlchemy') is None
-    assert main_import_sql, \
-        'Have you removed the import for `flask_sqlalchemy` from `cms/__init__.py`?'
-
-    main_import_datetime = main_module_code().find('name', lambda node: \
-        node.value == 'datetime' and \
-        node.parent.type == 'from_import' and \
-        node.parent.targets[0].value == 'datetime') is None
-    assert main_import_datetime, \
-        'Have you removed the import for `datetime` from `cms/__init__.py`?'
-
-@pytest.mark.test_cms_module_import_db_module1
-def test_cms_module_import_db_module1():
-    assert admin_exists, \
-        'Have you created the `admin` blueprint folder?'
-    assert main_module_exists, \
-        'Have do you have an `__init__.py` file in the `cms` application folder?'
 
     main_module_import = main_module_code().find('from_import', lambda node: \
         node.find('name', value='models'))
@@ -182,12 +161,34 @@ def test_cms_module_import_db_module1():
     init_app_call = main_module_code().find('name', lambda node: \
         node.value == 'init_app' and \
         node.parent.value[0].value == 'db' and \
-        node.parent.value[2].type == 'call') is not None
-    assert init_app_call, \
+        node.parent.value[2].type == 'call') 
+    init_app_call_exists = init_app_call is not None
+    assert init_app_call_exists, \
         'Are you calling the `init_app` method on `db`?'
     init_app_arg = init_app_call.parent.find('call_argument').value.value == 'app'
     assert init_app_arg, \
         'Are you passing `app` to the `init_app` method?'
+
+@pytest.mark.test_cms_module_remove_imports_module1
+def test_cms_module_remove_imports_module1():
+    assert admin_exists, \
+        'Have you created the `admin` blueprint folder?'
+    assert main_module_exists, \
+        'Have do you have an `__init__.py` file in the `cms` application folder?'
+
+    main_import_sql = main_module_code().find('name', lambda node: \
+        node.value == 'flask_sqlalchemy' and \
+        node.parent.type == 'from_import' and \
+        node.parent.targets[0].value == 'SQLAlchemy') is None
+    assert main_import_sql, \
+        'Have you removed the import for `flask_sqlalchemy` from `cms/__init__.py`?'
+
+    main_import_datetime = main_module_code().find('name', lambda node: \
+        node.value == 'datetime' and \
+        node.parent.type == 'from_import' and \
+        node.parent.targets[0].value == 'datetime') is None
+    assert main_import_datetime, \
+        'Have you removed the import for `datetime` from `cms/__init__.py`?'
 
 @pytest.mark.test_admin_blueprint_create_blueprint_module1
 def test_admin_blueprint_create_blueprint_module1():
@@ -200,7 +201,7 @@ def test_admin_blueprint_create_blueprint_module1():
         node.value[0].value == 'flask' and \
         'Blueprint' in list(node.targets.map(lambda node: str(node)))) is not None
     assert blueprint_from, \
-        'Are you importing `Blueprint` from `flask` in `admin/__init.py`?'
+        'Are you importing `Blueprint` from `flask` in `cms/admin/__init__.py`?'
 
     admin_bp = module_code().find('assign', lambda node: node.target.value == 'admin_bp') is not None
     assert admin_bp, \
