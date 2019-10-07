@@ -387,12 +387,14 @@ def test_admin_blueprint_template_folder_module1():
         'Have you added the `__init__.py` file to the `admin` blueprint folder?'
 
     admin_bp = module_code().find('assign', lambda node: \
-        node.target.value == 'admin_bp') is not None
-    assert admin_bp, \
+        node.target.value == 'admin_bp')
+    admin_bp_exists = admin_bp is not None
+    assert admin_bp_exists, \
         'Are you setting the `admin_bp` variable correctly?'
     blueprint_instance = admin_bp.find('atomtrailers', lambda node: \
-        node.value[0].value == 'Blueprint') is not None
-    assert blueprint_instance, \
+        node.value[0].value == 'Blueprint')
+    blueprint_instance_exists = blueprint_instance is not None
+    assert blueprint_instance_exists, \
         'Are you setting the `admin_bp` variable to an instance of `Content`?'
     blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: \
         str(node.target) + ':' + str(node.value)))
