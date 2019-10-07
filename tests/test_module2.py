@@ -39,7 +39,7 @@ def get_methods_keyword(route):
 
 def get_request_method(route, parent=True):
     request_method = get_route(route).find('comparison', lambda node: \
-        'request.method' in [str(node.first), str(node.second)]) is not None
+        'request.method' in [str(node.first), str(node.second)])
     request_method_exists = request_method is not None
     assert request_method_exists, \
         'Do you have an `if` statement that tests `request.method`?'
