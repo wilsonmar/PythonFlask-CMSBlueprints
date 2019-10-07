@@ -64,8 +64,9 @@ def test_admin_blueprint_models_file_imports_module1():
         node.value[0].value == 'SQLAlchemy' and \
         node.value[1].type == 'call' and \
         node.parent.type == 'assignment' and \
-        node.parent.target.value == 'db') is not None
-    assert db_assignment, \
+        node.parent.target.value == 'db')
+    db_assignment_exists = db_assignment is not None
+    assert db_assignment_exists, \
         'Are you creating an new `SQLAlchemy` instance named `db`?'
     no_arguments = len(db_assignment.find_all('call_argument')) == 0
     assert no_arguments, \
