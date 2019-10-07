@@ -355,8 +355,7 @@ def test_edit_route_module2():
     assert accept_id, \
         'Is the `edit` route function accepting an argument of `id`?'
 
-    content = get_route('edit').find('assign', lambda node: \
-        node.target.value == 'content')
+    content = get_route('edit').find('assign', lambda node: node.target.value == 'content')
     content_exists = content is not None
     assert content_exists, \
         'Are you setting the `content` variable correctly?'
@@ -495,9 +494,9 @@ def test_template_populate_form_controls_module2():
     assert content_exists, \
         'Is the `content.html` file in the `admin/templates` folder?'
 
-    content_url_for = 'admin.edit:id:item.id' in template_functions('content', 'url_for')
-    assert content_url_for, \
-        'Do you have an `href` with a call to `url_for` pointing to `admin.edit` passing in `id=item.id`?'
+    # content_url_for = 'admin.edit:id:item.id' in template_functions('content', 'url_for')
+    # assert content_url_for, \
+    #     'Do you have an `href` with a call to `url_for` pointing to `admin.edit` passing in `id=item.id`?'
 
 @pytest.mark.test_edit_route_form_data_module2
 def test_edit_route_form_data_module2():
