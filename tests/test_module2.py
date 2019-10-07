@@ -339,7 +339,7 @@ def test_create_route_redirect_module2():
     assert url_type, \
         'Are you passing a `type` keyword argument set to `type` to the `url_for()` function?'
 
-    flash_exists = get_request_method('create').find_all('atomtrailers', lambda node: \
+    flash_exists = get_request_method('create').find('atomtrailers', lambda node: \
         node.value[0].value == 'flash' and \
         node.value[1].type == 'call' and \
         node.value[1].value[0].value.value == 'error') is not None
@@ -600,7 +600,7 @@ def test_edit_route_update_data_module2():
     assert url_type, \
         'Are you passing a `type` keyword argument set to `type.name` to the `url_for()` function?'
 
-    flash_exists = get_request_method('create').find_all('atomtrailers', lambda node: \
+    flash_exists = get_request_method('create').find('atomtrailers', lambda node: \
         node.value[0].value == 'flash' and \
         node.value[1].type == 'call' and \
         node.value[1].value[0].value.value == 'error') is not None

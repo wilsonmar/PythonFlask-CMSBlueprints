@@ -161,7 +161,7 @@ def test_cms_module_import_db_module1():
     init_app_call = main_module_code().find('name', lambda node: \
         node.value == 'init_app' and \
         node.parent.value[0].value == 'db' and \
-        node.parent.value[2].type == 'call') 
+        node.parent.value[2].type == 'call')
     init_app_call_exists = init_app_call is not None
     assert init_app_call_exists, \
         'Are you calling the `init_app` method on `db`?'
@@ -212,7 +212,7 @@ def test_admin_blueprint_create_blueprint_module1():
     blueprint_instance_exists = blueprint_instance is not None
     assert blueprint_instance_exists, \
         'Are you setting the `admin_bp` variable to an instance of `Content`?'
-    
+
     blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
     admin_first = "None:'admin'" in blueprint_args
     assert admin_first, \
@@ -359,7 +359,7 @@ def test_cms_module_register_blueprint_module1():
         'Have do you have an `__init__.py` file in the `cms` application folder?'
 
     bp_import = main_module_code().find('from_import', lambda node: \
-        node.find('name_as_name', value='admin_bp')) 
+        node.find('name_as_name', value='admin_bp'))
     bp_import_exists = bp_import is not None
     assert bp_import_exists, \
         'Are you importing `admin_bp` from `cms.admin` in `cms/__init__.py`?'
@@ -456,15 +456,15 @@ def test_admin_blueprint_template_folder_module1():
     partial_link_exists  = 'admin.content:type:partial' in links
     assert partial_link_exists, \
         'Have you updated the `url_for` for `Partial` in `admin/templates/admin/layout.html`?'
-    
+
     template_link_exists = 'admin.content:type:template' in links
     assert template_link_exists, \
         'Have you updated the `url_for` for `Templates` in `admin/templates/admin/layout.html`?'
-    
+
     users_link_exists    = 'admin.users:' in links
     assert users_link_exists, \
         'Have you updated the `url_for` for `Users` in `admin/templates/admin/layout.html`?'
-    
+
     settings_link_exists = 'admin.settings:' in links
     assert settings_link_exists, \
         'Have you updated the `url_for` for `Settings` in `admin/templates/admin/layout.html`?'
