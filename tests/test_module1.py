@@ -79,7 +79,7 @@ def test_admin_blueprint_move_model_classes_module1():
     assert models_exists, \
         'Have you added the `models.py` file to the `admin` blueprint folder?'
     assert main_module_exists, \
-        'Have do you have an `__init__.py` file in the root folder?'
+        'Have do you have an `__init__.py` file in the `cms` application folder?'
 
     model_classes = list(models_code().find_all('class').map(lambda node: node.name))
     class_count = len(model_classes) == 4
@@ -88,20 +88,20 @@ def test_admin_blueprint_move_model_classes_module1():
     setting_class = 'Setting' in model_classes
     user_class = 'User' in model_classes
     assert class_count, \
-        'Have you moved the four models from `__init__.py` to `cms/admin/models.py`'
+        'Have you moved the four models from `cms/__init__.py` to `cms/admin/models.py`'
     assert type_class, \
-        'Have you moved the `Type` model from `__init__.py` to `cms/admin/models.py`'
+        'Have you moved the `Type` model from `cms/__init__.py` to `cms/admin/models.py`'
     assert content_class, \
-        'Have you moved the `Content` model from `__init__.py` to `cms/admin/models.py`'
+        'Have you moved the `Content` model from `cms/__init__.py` to `cms/admin/models.py`'
     assert setting_class, \
-        'Have you moved the `Setting` model from `__init__.py` to `cms/admin/models.py`'
+        'Have you moved the `Setting` model from `cms/__init__.py` to `cms/admin/models.py`'
     assert user_class, \
-        'Have you moved the `User` model from `__init__.py` to `cms/admin/models.py`'
+        'Have you moved the `User` model from `cms/__init__.py` to `cms/admin/models.py`'
 
     main_module_classes = list(main_module_code().find_all('class').map(lambda node: node.name))
     main_module_class_count = len(main_module_classes) == 0
     assert main_module_class_count, \
-        'Have you moved the four models from `__init__.py` to `cms/admin/models.py`'
+        'Have you moved the four models from `cms/__init__.py` to `cms/admin/models.py`'
 
     main_module_import = main_module_code().find('from_import', lambda node: \
         node.find('name', value='models')) is not None
@@ -114,26 +114,26 @@ def test_admin_blueprint_move_model_classes_module1():
         'Are you importing the correct methods and classes from `cms.admin.models`?'
     name_as_name_content = main_module_import.find('name_as_name', value='Content') is not None
     assert name_as_name_content, \
-        'Are you importing the `Content` model class from `cms.admin.models`?'
+        'Are you importing the `Content` model class from `cms.admin.models` in `cms/__init__.py`?'
 
     name_as_name_type = main_module_import.find('name_as_name', value='Type') is not None
     assert name_as_name_type, \
-        'Are you importing the `Type` model class from `cms.admin.models`?'
+        'Are you importing the `Type` model class from `cms.admin.models` in `cms/__init__.py`?'
 
     name_as_name_setting =  main_module_import.find('name_as_name', value='Setting') is not None
     assert name_as_name_setting, \
-        'Are you importing the `Setting` model class from `cms.admin.models`?'
+        'Are you importing the `Setting` model class from `cms.admin.models` in `cms/__init__.py`?'
 
     name_as_name_user =  main_module_import.find('name_as_name', value='User') is not None
     assert name_as_name_user, \
-        'Are you importing the `User` model class from `cms.admin.models`?'
+        'Are you importing the `User` model class from `cms.admin.models` in `cms/__init__.py`?'
 
 @pytest.mark.test_cms_module_remove_imports_module1
 def test_cms_module_remove_imports_module1():
     assert admin_exists, \
         'Have you created the `admin` blueprint folder?'
     assert main_module_exists, \
-        'Have do you have an `__init__.py` file in the root folder?'
+        'Have do you have an `__init__.py` file in the `cms` application folder?'
 
     db_assignment = main_module_code().find('atomtrailers', lambda node: \
         node.value[0].value == 'SQLAlchemy' and \
@@ -141,7 +141,7 @@ def test_cms_module_remove_imports_module1():
         node.parent.type == 'assignment' and \
         node.parent.target.value == 'db') is None
     assert db_assignment, \
-        'Have you removed the `SQLAlchemy` instance named `db` from `__init__.py`?'
+        'Have you removed the `SQLAlchemy` instance named `db` from `cms/__init__.py`?'
 
     main_import_sql = main_module_code().find('name', lambda node: \
         node.value == 'flask_sqlalchemy' and \
@@ -162,7 +162,7 @@ def test_cms_module_import_db_module1():
     assert admin_exists, \
         'Have you created the `admin` blueprint folder?'
     assert main_module_exists, \
-        'Have do you have an `__init__.py` file in the root folder?'
+        'Have do you have an `__init__.py` file in the `cms` application folder?'
 
     main_module_import = main_module_code().find('from_import', lambda node: \
         node.find('name', value='models')) is not None
@@ -271,7 +271,7 @@ def test_admin_blueprint_move_routes_module1():
     assert module_exists, \
         'Have you added the `__init__.py` file to the `admin` blueprint folder?'
     assert main_module_exists, \
-        'Have do you have an `__init__.py` file in the root folder?'
+        'Have do you have an `__init__.py` file in the `cms` application folder?'
 
     requested_type = module_code().find('def', name='requested_type') is not None
     assert requested_type, \
@@ -345,7 +345,7 @@ def test_cms_module_register_blueprint_module1():
     assert admin_exists, \
         'Have you created the `admin` blueprint folder?'
     assert main_module_exists, \
-        'Have do you have an `__init__.py` file in the root folder?'
+        'Have do you have an `__init__.py` file in the `cms` application folder?'
 
     bp_import = main_module_code().find('from_import', lambda node: \
         node.find('name_as_name', value='admin_bp')) is not None
