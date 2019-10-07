@@ -133,9 +133,14 @@ def test_template_buttons_module2():
     assert submit_exists, \
         'Have you added an `<input>` with the correct attributes to the first `is-grouped` control `<div>`?'
 
-    cancel_exists = len(content_form_template.select('a.button.is-text')) == 1
+    cancel_el = content_form_template.select('a.button.is-text')
+    cancel_exists = len(cancel_el) == 1
     assert cancel_exists, \
         'Have you added an `<a>` with the correct attributes to the second `is-grouped` control `<div>`?'
+
+    a_contents = (cancel_el[0].contents[0]).lower() == 'cancel'
+    assert a_contents, \
+        'Does your cancel link contain the word `Cancel`?'
 
     links = 'admin.content:type:type_name' in template_functions('content_form', 'url_for')
     assert links, \
