@@ -25,7 +25,7 @@ def admin_module_code():
 def get_route(route):
     route_function = admin_module_code().find('def', name=route) is not None
     assert route_function, \
-        'Does the `{}` route function exist in `admin/__init__.py`?'.format(route)
+        'Does the `{}` route function exist in `cms/admin/__init__.py`?'.format(route)
     return route_function
 
 def get_methods_keyword(route):
@@ -58,7 +58,7 @@ def get_form_data(route, name):
 @pytest.mark.test_template_add_from_controls_module2
 def test_template_add_from_controls_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     assert admin_exists and admin_templates_exists, \
         'Have you created a `templates` folder in the `admin` blueprint folder?'
     assert content_form_exists, \
@@ -79,7 +79,7 @@ def test_template_add_from_controls_module2():
 @pytest.mark.test_template_type_dropdown_module2
 def test_template_type_dropdown_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     assert admin_exists and admin_templates_exists, \
         'Have you created a `templates` folder in the `admin` blueprint folder?'
     assert content_form_exists, \
@@ -117,7 +117,7 @@ def test_template_type_dropdown_module2():
 @pytest.mark.test_template_buttons_module2
 def test_template_buttons_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     assert admin_exists and admin_templates_exists, \
         'Have you created a `templates` folder in the `admin` blueprint folder?'
     assert content_form_exists, \
@@ -138,7 +138,7 @@ def test_template_buttons_module2():
 @pytest.mark.test_create_route_methods_module2
 def test_create_route_methods_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     strings = list(get_methods_keyword('create').find_all('string').map(lambda node: node.value.replace("'", '"')))
     methods_exist = '"GET"' in strings and '"POST"' in strings
     assert methods_exist, \
@@ -150,7 +150,7 @@ def test_create_route_methods_module2():
 @pytest.mark.test_create_route_form_data_module2
 def test_create_route_form_data_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     get_form_data('create', 'slug')
     get_form_data('create', 'type_id')
     get_form_data('create', 'body')
@@ -166,7 +166,7 @@ def test_create_route_form_data_module2():
 @pytest.mark.test_create_route_validate_data_module2
 def test_create_route_validate_data_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
 
     title_error = get_request_method('create').find('unitary_operator', lambda node: node.target.value == 'title')
     title_if_exists = title_error is not None and title_error.parent is not None and title_error.parent.type == 'if'
@@ -189,7 +189,7 @@ def test_create_route_validate_data_module2():
 @pytest.mark.test_create_route_insert_data_module2
 def test_create_route_insert_data_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     error_check = get_request_method('create').find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
     error_check_exists = error_check is not None and error_check.parent.type == 'if' and \
@@ -252,7 +252,7 @@ def test_create_route_insert_data_module2():
 @pytest.mark.test_create_route_redirect_module2
 def test_create_route_redirect_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     error_check = get_request_method('create').find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
     error_check_exists = error_check is not None and error_check.parent.type == 'if' and \
@@ -295,7 +295,7 @@ def test_create_route_redirect_module2():
 @pytest.mark.test_edit_route_module2
 def test_edit_route_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     accept_id = get_route('edit').find('def_argument', lambda node: node.target.value == 'id') is not None
     assert accept_id, \
         'Is the `edit` route function accepting an argument of `id`?'
@@ -331,7 +331,7 @@ def test_edit_route_module2():
 @pytest.mark.test_edit_route_queries_module2
 def test_edit_route_queries_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
 
     type = get_route('edit').find('assign', lambda node: \
         node.target.value == 'type') is not None
@@ -368,7 +368,7 @@ def test_edit_route_queries_module2():
 @pytest.mark.test_edit_route_render_template_module2
 def test_edit_route_render_template_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
 
     return_render = get_route('edit').find('return', lambda node: \
         node.value[0].value == 'render_template' and \
@@ -416,7 +416,7 @@ def test_edit_route_render_template_module2():
 @pytest.mark.test_template_populate_form_controls_module2
 def test_template_populate_form_controls_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     
     content_form_filters = filters('content_form')
     title_filter = 'item_title.default...None.None' in content_form_filters
@@ -441,7 +441,7 @@ def test_template_populate_form_controls_module2():
 @pytest.mark.test_edit_route_form_data_module2
 def test_edit_route_form_data_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
 
     post_check = str(get_request_method('edit', False)).find('POST')
     assert post_check, \
@@ -475,7 +475,7 @@ def test_edit_route_form_data_module2():
 @pytest.mark.test_edit_route_validate_data_module2
 def test_edit_route_validate_data_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     title_error = get_request_method('edit').find('unitary_operator', lambda node: \
         node.target.value[0].value == 'request' and \
         node.target.value[1].value == 'form' and \
@@ -493,7 +493,7 @@ def test_edit_route_validate_data_module2():
 @pytest.mark.test_edit_route_update_data_module2
 def test_edit_route_update_data_module2():
     assert admin_module_exists, \
-        'Have you created the `admin/__init__.py` file?'
+        'Have you created the `cms/admin/__init__.py` file?'
     error_check = get_request_method('edit').find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
 

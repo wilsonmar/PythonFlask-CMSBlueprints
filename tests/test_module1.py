@@ -148,14 +148,14 @@ def test_cms_module_remove_imports_module1():
         node.parent.type == 'from_import' and \
         node.parent.targets[0].value == 'SQLAlchemy') is None
     assert main_import_sql, \
-        'Have you removed the import for `flask_sqlalchemy` from `__init__.py`?'
+        'Have you removed the import for `flask_sqlalchemy` from `cms/__init__.py`?'
 
     main_import_datetime = main_module_code().find('name', lambda node: \
         node.value == 'datetime' and \
         node.parent.type == 'from_import' and \
         node.parent.targets[0].value == 'datetime') is None
     assert main_import_datetime, \
-        'Have you removed the import for `datetime` from `__init__.py`?'
+        'Have you removed the import for `datetime` from `cms/__init__.py`?'
 
 @pytest.mark.test_cms_module_import_db_module1
 def test_cms_module_import_db_module1():
@@ -171,11 +171,11 @@ def test_cms_module_import_db_module1():
     model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
     main_import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
     assert main_import_path, \
-        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__/py`?'
+        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__.py`?'
 
     name_as_name_db = main_module_import.find('name_as_name', value='db') is not None
     assert name_as_name_db, \
-        'Are you importing the `db` SQLAlchemy instance from `cms.admin.models` in `cms/__init__/py`?'
+        'Are you importing the `db` SQLAlchemy instance from `cms.admin.models` in `cms/__init__.py`?'
 
     init_app_call = main_module_code().find('name', lambda node: \
         node.value == 'init_app' and \
@@ -234,10 +234,10 @@ def test_admin_blueprint_imports_module1():
     from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
     render_template_import = 'render_template' in from_flask_imports
     assert render_template_import, \
-        'Are you importing `render_template` from `flask` in `admin/__init__.py`?'
+        'Are you importing `render_template` from `flask` in `cms/admin/__init__.py`?'
     abort_import = 'abort' in from_flask_imports
     assert abort_import, \
-        'Are you importing `abort` from `flask` in `admin/__init__.py`?'
+        'Are you importing `abort` from `flask` in `cms/admin/__init__.py`?'
 
     module_import = module_code().find('from_import', lambda node: node.find('name', value='models')) is not None
     assert module_import, \
@@ -245,23 +245,23 @@ def test_admin_blueprint_imports_module1():
     model_path = list(module_import.find_all('name').map(lambda node: node.value))
     import_path = module_import is not None and ':'.join(model_path) == 'cms:admin:models'
     assert import_path, \
-        'Are you importing the correct methods and classes from `cms.admin.models` in `admin/__init__.py`?'
+        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/admin/__init__.py`?'
 
     name_as_name_content = module_import.find('name_as_name', value='Content') is not None
     assert name_as_name_content, \
-        'Are you importing the `Content` model class from `cms.admin.models` in `admin/__init__.py`?'
+        'Are you importing the `Content` model class from `cms.admin.models` in `cms/admin/__init__.py`?'
 
     name_as_name_type = module_import.find('name_as_name', value='Type') is not None
     assert name_as_name_type, \
-        'Are you importing the `Type` model class from `cms.admin.models` in `admin/__init__.py`?'
+        'Are you importing the `Type` model class from `cms.admin.models` in `cms/admin/__init__.py`?'
 
     name_as_name_setting =  module_import.find('name_as_name', value='Setting') is not None
     assert name_as_name_setting, \
-        'Are you importing the `Setting` model class from `cms.admin.models` in `admin/__init__.py`?'
+        'Are you importing the `Setting` model class from `cms.admin.models` in `cms/admin/__init__.py`?'
 
     name_as_name_user =  module_import.find('name_as_name', value='User') is not None
     assert name_as_name_user, \
-        'Are you importing the `User` model class from `cms.admin.models` in `admin/__init__.py`?'
+        'Are you importing the `User` model class from `cms.admin.models` in `cms/admin/__init__.py`?'
 
 @pytest.mark.test_admin_blueprint_move_routes_module1
 def test_admin_blueprint_move_routes_module1():
@@ -275,15 +275,15 @@ def test_admin_blueprint_move_routes_module1():
 
     requested_type = module_code().find('def', name='requested_type') is not None
     assert requested_type, \
-        'Did you move the `requested_type` function from `__init__.py` to `admin/__init__.py`?'
+        'Did you move the `requested_type` function from `__init__.py` to `cms/admin/__init__.py`?'
 
     content_route = module_code().find('def', name='content') is not None
     assert content_route, \
-        'Did you move the `user` function from `__init__.py` to `admin/__init__.py`?'
+        'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
     content_decorators = content_route.find_all('dotted_name')
     content_decorator_count = len(content_decorators) == 2
     assert content_decorator_count, \
-        'Did you move the `settings` route decorators to `admin/__init__.py`?'
+        'Did you move the `settings` route decorators to `cms/admin/__init__.py`?'
     content_blueprint_route1 = str(content_decorators[0]) == 'admin_bp.route'
     content_blueprint_route2 = str(content_decorators[1]) == 'admin_bp.route'
     assert content_blueprint_route1, \
@@ -293,33 +293,33 @@ def test_admin_blueprint_move_routes_module1():
 
     create_route = module_code().find('def', name='create') is not None
     assert create_route, \
-        'Did you move the `user` function from `__init__.py` to `admin/__init__.py`?'
+        'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
     create_decorators = create_route.find_all('dotted_name')
     create_decorator_count = len(create_decorators) == 1
     assert create_decorator_count, \
-        'Did you move the `settings` route decorators to `admin/__init__.py`?'
+        'Did you move the `settings` route decorators to `cms/admin/__init__.py`?'
     create_blueprint_routes = str(create_decorators[0]) == 'admin_bp.route'
     assert create_blueprint_routes, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
 
     users_route = module_code().find('def', name='users') is not None
     assert users_route, \
-        'Did you move the `user` function from `__init__.py` to `admin/__init__.py`?'
+        'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
     users_decorators = users_route.find_all('dotted_name')
     users_decorator_count = len(users_decorators) == 1
     assert users_decorator_count, \
-        'Did you move the `settings` route decorators to `admin/__init__.py`?'
+        'Did you move the `settings` route decorators to `cms/admin/__init__.py`?'
     users_blueprint_routes = str(users_decorators[0]) == 'admin_bp.route'
     assert users_blueprint_routes, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `users` function?'
 
     settings_route = module_code().find('def', name='settings') is not None
     assert settings_route, \
-        'Did you move the `settings` function from `__init__.py` to `admin/__init__.py`?'
+        'Did you move the `settings` function from `__init__.py` to `cms/admin/__init__.py`?'
     settings_decorators = settings_route.find_all('dotted_name')
     settings_decorator_count = len(settings_decorators) == 1
     assert settings_decorator_count, \
-        'Did you move the `settings` route decorators to `admin/__init__.py`?'
+        'Did you move the `settings` route decorators to `cms/admin/__init__.py`?'
     settings_blueprint_routes = str(settings_decorators[0]) == 'admin_bp.route'
     assert settings_blueprint_routes, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `settings` function?'
