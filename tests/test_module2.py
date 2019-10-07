@@ -145,6 +145,16 @@ def test_template_buttons_module2():
 def test_create_route_methods_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
+
+    flask_import = admin_module_code().find('from_import', lambda node: node.value[0].value == 'flask')
+    flask_import_exits = flask_import  is not None
+    assert flask_import_exits, \
+        'Do you have an import from `flask` statement?'
+    from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
+    request_import = 'request' in from_flask_imports
+    assert request_import, \
+        'Are you importing `request` from `flask` in `cms/admin/__init__.py`?'
+
     strings = list(get_methods_keyword('create').find_all('string').map(lambda node: node.value.replace("'", '"')))
     methods_exist = '"GET"' in strings and '"POST"' in strings
     assert methods_exist, \
@@ -263,6 +273,19 @@ def test_create_route_insert_data_module2():
 def test_create_route_redirect_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
+
+    flask_import = admin_module_code().find('from_import', lambda node: node.value[0].value == 'flask')
+    flask_import_exits = flask_import  is not None
+    assert flask_import_exits, \
+        'Do you have an import from `flask` statement?'
+    from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
+    redirect_import = 'redirect' in from_flask_imports
+    assert redirect_import, \
+        'Are you importing `redirect` from `flask` in `cms/admin/__init__.py`?'
+    url_for_import = 'url_for' in from_flask_imports
+    assert url_for_import, \
+        'Are you importing `url_for` from `flask` in `cms/admin/__init__.py`?'
+
     error_check = get_request_method('create').find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
     error_check_exists = error_check is not None and error_check.parent.type == 'if' and \
