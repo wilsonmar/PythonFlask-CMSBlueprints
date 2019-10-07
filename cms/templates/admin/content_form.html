@@ -7,7 +7,10 @@
   </header>
   <div class="card-content">
     <div class="content">
-      <form>
+      {% for message in get_flashed_messages() %}
+        <div class="flash">{{ message }}</div>
+      {% endfor %}
+      <form method="POST">
         <div class="field">
           <label class="label">Title</label>
           <div class="control">

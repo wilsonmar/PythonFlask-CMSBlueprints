@@ -255,6 +255,21 @@ def test_create_route_insert_data_module2():
     assert content_count, \
         'Are you passing the correct number of keyword arguments to the `Content` instance?'
 
+    module_import = admin_module_code().find('from_import', lambda node: \
+        node.find('name', value='models'))
+    module_import_exists =  module_import is not None
+    assert module_import_exists, \
+        'Are you importing the correct methods and classes from `cms.admin.models`?'
+    model_path = list(module_import.find_all('name').map(lambda node: node.value))
+    import_path = module_import is not None and ':'.join(model_path) == 'cms:admin:models'
+    assert import_path, \
+        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__.py`?'
+
+    name_as_name_db = module_import.find('name_as_name', value='db') is not None
+    assert name_as_name_db, \
+        'Are you importing the `db` SQLAlchemy instance from `cms.admin.models` in `admin/cms/__init__.py`?'
+
+
     add_call = error_check_if.find('atomtrailers', lambda node: \
         node.value[0].value == 'db' and \
         node.value[1].value == 'session' and \
@@ -335,7 +350,8 @@ def test_create_route_redirect_module2():
 def test_edit_route_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
-    accept_id = get_route('edit').find('def_argument', lambda node: node.target.value == 'id') is not None
+    accept_id = get_route('edit')\
+        .find('def_argument', lambda node: node.target.value == 'id') is not None
     assert accept_id, \
         'Is the `edit` route function accepting an argument of `id`?'
 
