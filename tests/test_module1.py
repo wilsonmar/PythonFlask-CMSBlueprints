@@ -101,11 +101,12 @@ def test_admin_blueprint_move_model_classes_module1():
     main_module_classes = list(main_module_code().find_all('class').map(lambda node: node.name))
     main_module_class_count = len(main_module_classes) == 0
     assert main_module_class_count, \
-        'Have you moved the four models from `cms/__init__.py` to `cms/admin/models.py`'
+        'Have you removed the four models from `cms/__init__.py`?'
 
     main_module_import = main_module_code().find('from_import', lambda node: \
-        node.find('name', value='models')) is not None
-    assert main_module_import, \
+        node.find('name', value='models'))
+    main_module_import_exists =  main_module_import is not None
+    assert main_module_import_exists, \
         'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__.py`?'
     model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
     import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
@@ -165,8 +166,9 @@ def test_cms_module_import_db_module1():
         'Have do you have an `__init__.py` file in the `cms` application folder?'
 
     main_module_import = main_module_code().find('from_import', lambda node: \
-        node.find('name', value='models')) is not None
-    assert main_module_import, \
+        node.find('name', value='models'))
+    main_module_import_exists =  main_module_import is not None
+    assert main_module_import_exists, \
         'Are you importing the correct methods and classes from `cms.admin.models`?'
     model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
     main_import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
