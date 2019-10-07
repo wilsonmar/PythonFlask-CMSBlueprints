@@ -513,7 +513,7 @@ def test_edit_route_form_data_module2():
     get_form_data('edit', 'content.type_id')
     get_form_data('edit', 'content.body')
 
-    content_updated_at = get_request_method(route).find('assign', lambda node: \
+    content_updated_at = get_request_method('edit').find('assign', lambda node: \
         str(node.target) == 'content.updated_at')
     content_updated_at_exists = content_updated_at is not None
     assert content_updated_at_exists, \
