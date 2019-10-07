@@ -42,7 +42,7 @@ def get_request_method(route, parent=True):
         'request.method' in [str(node.first), str(node.second)])
     request_method_exists = request_method is not None
     assert request_method_exists, \
-        'Do you have an `if` statement that tests `request.method`?'
+        'Do you have an `if` statement in the `{}` route that checks `request.method`?'.format(route)
     return request_method.parent if parent else request_method
 
 def get_form_data(route, name):
@@ -51,6 +51,7 @@ def get_form_data(route, name):
     assignment_exists = assignment is not None
     assert assignment_exists, \
         'Do you have a variable named `{}`?'.format(name)
+
     right = assignment.find('atomtrailers', lambda node: \
         node.value[0].value == 'request' and \
         node.value[1].value == 'form' and \
@@ -128,7 +129,7 @@ def test_template_buttons_module2():
     assert content_form_exists, \
         'Is the `content_form.html` file in the `admin/templates` folder?'
 
-    submit_exists = len(content_form_template.select('input[type="submit"][value="Submit"]')) == 1
+    submit_exists = len(content_form_template.select('input[type="submit"][value="Submit"].button.is-link')) == 1
     assert submit_exists, \
         'Have you added an `<input>` with the correct attributes to the first `is-grouped` control `<div>`?'
 
