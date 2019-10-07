@@ -245,9 +245,10 @@ def test_admin_blueprint_imports_module1():
     assert abort_import, \
         'Are you importing `abort` from `flask` in `cms/admin/__init__.py`?'
 
-    module_import = module_code().find('from_import', lambda node: node.find('name', value='models')) is not None
-    assert module_import, \
-        'Are you importing the correct methods and classes from `cms.admin.models`?'
+    module_import = module_code().find('from_import', lambda node: node.find('name', value='models'))
+    module_import_exists = module_import is not None
+    assert module_import_exists, \
+        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/admin/__init__.py`?'
     model_path = list(module_import.find_all('name').map(lambda node: node.value))
     import_path = module_import is not None and ':'.join(model_path) == 'cms:admin:models'
     assert import_path, \
@@ -281,11 +282,12 @@ def test_admin_blueprint_move_routes_module1():
 
     requested_type = module_code().find('def', name='requested_type') is not None
     assert requested_type, \
-        'Did you move the `requested_type` function from `__init__.py` to `cms/admin/__init__.py`?'
+        'Did you move the `requested_type` function from `cms/__init__.py` to `cms/admin/__init__.py`?'
 
-    content_route = module_code().find('def', name='content') is not None
-    assert content_route, \
-        'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
+    content_route = module_code().find('def', name='content')
+    content_route_exists = content_route is not None
+    assert content_route_exists, \
+        'Did you move the `user` function from `cms/__init__.py` to `cms/admin/__init__.py`?'
     content_decorators = content_route.find_all('dotted_name')
     content_decorator_count = len(content_decorators) == 2
     assert content_decorator_count, \
@@ -297,8 +299,9 @@ def test_admin_blueprint_move_routes_module1():
     assert content_blueprint_route2, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `content` function?'
 
-    create_route = module_code().find('def', name='create') is not None
-    assert create_route, \
+    create_route = module_code().find('def', name='create')
+    create_route_exists = content_route is not None
+    assert create_route_exists, \
         'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
     create_decorators = create_route.find_all('dotted_name')
     create_decorator_count = len(create_decorators) == 1
@@ -308,8 +311,9 @@ def test_admin_blueprint_move_routes_module1():
     assert create_blueprint_routes, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
 
-    users_route = module_code().find('def', name='users') is not None
-    assert users_route, \
+    users_route = module_code().find('def', name='users')
+    users_route_exists = content_route is not None
+    assert users_route_exists, \
         'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
     users_decorators = users_route.find_all('dotted_name')
     users_decorator_count = len(users_decorators) == 1
@@ -319,8 +323,9 @@ def test_admin_blueprint_move_routes_module1():
     assert users_blueprint_routes, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `users` function?'
 
-    settings_route = module_code().find('def', name='settings') is not None
-    assert settings_route, \
+    settings_route = module_code().find('def', name='settings')
+    settings_route_exists = content_route is not None
+    assert settings_route_exists, \
         'Did you move the `settings` function from `__init__.py` to `cms/admin/__init__.py`?'
     settings_decorators = settings_route.find_all('dotted_name')
     settings_decorator_count = len(settings_decorators) == 1
@@ -354,8 +359,9 @@ def test_cms_module_register_blueprint_module1():
         'Have do you have an `__init__.py` file in the `cms` application folder?'
 
     bp_import = main_module_code().find('from_import', lambda node: \
-        node.find('name_as_name', value='admin_bp')) is not None
-    assert bp_import, \
+        node.find('name_as_name', value='admin_bp')) 
+    bp_import_exists = bp_import is not None
+    assert bp_import_exists, \
         'Are you importing `admin_bp` from `cms.admin` in `cms/__init__.py`?'
 
     model_path = list(bp_import.find_all('name').map(lambda node: node.value))
@@ -366,8 +372,9 @@ def test_cms_module_register_blueprint_module1():
     register_bp_call = main_module_code().find('atomtrailers', lambda node: \
         node.value[0].value == 'app' and \
         node.value[1].value == 'register_blueprint' and \
-        node.value[2].type == 'call') is not None
-    assert register_bp_call, \
+        node.value[2].type == 'call')
+    register_bp_call_exists = register_bp_call is not None
+    assert register_bp_call_exists, \
         'Are you calling `register_blueprint` on `app`?'
 
     register_blueprint_args = list(register_bp_call.find_all('call_argument').map(lambda node: \
