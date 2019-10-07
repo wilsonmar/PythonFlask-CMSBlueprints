@@ -102,7 +102,8 @@ def test_template_type_dropdown_module2():
     assert cycle_types, \
         'Is the for loop cycling through `types`?'
 
-    len_option = len(select_code(select_template_code[0], '<option', '</option>')) > 0
+    option_el = select_code(select_template_code[0], '<option', '</option>')
+    len_option = len(option_el) > 0
     assert len_option, \
         'Have you added an `<option>` element inside the `for` loop?'
 
@@ -394,35 +395,35 @@ def test_edit_route_render_template_module2():
     template_exists = 'None:"admin/content_form.html"' in return_render_args
     assert template_exists, \
         'Are you passing the correct HTML template to the `render_template()` function?'
-    
+
     types_exists = 'types:types' in return_render_args
     assert types_exists, \
         'Are you passing a `types` keyword argument set to `types` to the `render_template()` function?'
-    
+
     title_exists = 'title:"Edit"' in return_render_args
     assert title_exists, \
         'Are you passing a `title` keyword argument set to `"Edit"` to the `render_template()` function?'
-    
+
     item_title_exists = 'item_title:content.title' in return_render_args
     assert item_title_exists, \
         'Are you passing a `item_title` keyword argument set to `content.title` to the `render_template()` function?'
-    
+
     slug_exists = 'slug:content.slug' in return_render_args
     assert slug_exists, \
         'Are you passing a `slug` keyword argument set to `content.slug` to the `render_template()` function?'
-    
+
     type_name_exists = 'type_name:type.name' in return_render_args
     assert type_name_exists, \
         'Are you passing a `type_name` keyword argument set to `type.name` to the `render_template()` function?'
-    
+
     type_id_exists = 'type_id:content.type_id' in return_render_args
     assert type_id_exists, \
         'Are you passing a `type_id` keyword argument set to `content.type_id` to the `render_template()` function?'
-    
+
     body_exists = 'body:content.body' in return_render_args
     assert body_exists, \
         'Are you passing a `body` keyword argument set to `content.body` to the `render_template()` function?'
-    
+
     argument_count = len(return_render_args) == 8
     assert argument_count, \
         'Are you passing the correct number of keyword arguments to the `render_template()` function?'
@@ -431,16 +432,16 @@ def test_edit_route_render_template_module2():
 def test_template_populate_form_controls_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
-    
+
     content_form_filters = filters('content_form')
     title_filter = 'item_title.default...None.None' in content_form_filters
     assert title_filter, \
         'Is _title_ `<input>` `value` attribute set to `item_title`? Have you added the `default(\'\')` filter?'
-    
+
     slug_filter = 'slug.default...None.None' in content_form_filters
     assert slug_filter, \
         'Is _slug_ `<input>` `value` attribute set to `item_title`? Have you added the `default(\'\')` filter?'
-    
+
     body_filter = 'body.default...None.None' in content_form_filters
     assert body_filter, \
         'Is _body_ `<textarea>` text content set to `body`? Have you added the `default(\'\')` filter?'
@@ -460,7 +461,7 @@ def test_edit_route_form_data_module2():
     post_check = str(get_request_method('edit', False)).find('POST')
     assert post_check, \
         'Are you testing if the request method is `POST`?'
-    
+
     get_form_data('edit', 'content.title')
     get_form_data('edit', 'content.slug')
     get_form_data('edit', 'content.type_id')
@@ -480,7 +481,7 @@ def test_edit_route_form_data_module2():
         'Are you setting `content.updated_at` to the current date?'
 
     error = get_request_method('create').find('assign', lambda node: \
-        node.target.value == 'error') 
+        node.target.value == 'error')
     error_exists = error is not None
     assert error_exists, \
         'Do you have a variable named `error`?'
