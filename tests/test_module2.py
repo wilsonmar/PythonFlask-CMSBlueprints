@@ -23,27 +23,29 @@ def admin_module_code():
         return RedBaron(admin_module_source_code.read())
 
 def get_route(route):
-    route_function = admin_module_code().find('def', name=route)
-    assert route_function is not None, \
+    route_function = admin_module_code().find('def', name=route) is not None
+    assert route_function, \
         'Does the `{}` route function exist in `admin/__init__.py`?'.format(route)
     return route_function
 
 def get_methods_keyword(route):
-    methods_keyword = get_route(route).find_all('call_argument', lambda node: str(node.target) == 'methods')
-    assert methods_keyword is not None, \
+    methods_keyword = get_route(route).find_all('call_argument', lambda node: \
+        str(node.target) == 'methods') is not None
+    assert methods_keyword, \
         'Does the `{}` route have a keyword argument of `methods`?'.format(name)
     return methods_keyword
 
 def get_request_method(route, parent=True):
     request_method = get_route(route).find('comparison', lambda node: \
-        'request.method' in [str(node.first), str(node.second)])
-    assert request_method is not None, \
+        'request.method' in [str(node.first), str(node.second)]) is not None
+    assert request_method, \
         'Do you have an `if` statement that tests `request.method`?'
     return request_method.parent if parent else request_method
 
 def get_form_data(route, name):
-    variable = get_request_method(route).find('assign', lambda node: str(node.target) == name)
-    assert variable is not None, \
+    variable = get_request_method(route).find('assign', lambda node: \
+        str(node.target) == name) is not None
+    assert variable, \
         'Do you have a variable named `{}`?'.format(name)
     right = variable.find('atomtrailers', lambda node: \
         node.value[0].value == 'request' and \
@@ -153,8 +155,9 @@ def test_create_route_form_data_module2():
     get_form_data('create', 'type_id')
     get_form_data('create', 'body')
 
-    error = get_request_method('create').find('assign', lambda node: node.target.value == 'error')
-    assert error is not None, \
+    error = get_request_method('create').find('assign', lambda node: \
+        node.target.value == 'error') is not None
+    assert error, \
         'Do you have a variable named `error`?'
     error_none = error.value.to_python() is None
     assert error_none, \
@@ -197,11 +200,13 @@ def test_create_route_insert_data_module2():
         'Do you have an if statment that is checking if `error` is `None`?'
 
     error_check_if = error_check.parent
-    content = error_check_if.find('assign', lambda node: node.target.value == 'content')
-    assert content is not None, \
+    content = error_check_if.find('assign', lambda node: \
+        node.target.value == 'content') is not None
+    assert content, \
         'Are you setting the `content` variable correctly?'
-    content_instance = content.find('atomtrailers', lambda node: node.value[0].value == 'Content')
-    assert content_instance is not None, \
+    content_instance = content.find('atomtrailers', lambda node: \
+        node.value[0].value == 'Content') is not None
+    assert content_instance, \
         'Are you setting the `content` variable to an instance of `Content`?'
     content_args = list(content_instance.find_all('call_argument').map(lambda node: node.target.value + ':' + node.value.value))
 
@@ -231,8 +236,8 @@ def test_create_route_insert_data_module2():
         node.value[2].value == 'add' and \
         node.value[3].type == 'call' and \
         node.value[3].value[0].value.value == 'content'
-        )
-    assert add_call is not None, \
+        ) is not None
+    assert add_call, \
         'Are you calling the `db.session.add()` function and passing in the correct argument?'
 
     commit_call = error_check_if.find('atomtrailers', lambda node: \
@@ -240,8 +245,8 @@ def test_create_route_insert_data_module2():
         node.value[1].value == 'session' and \
         node.value[2].value == 'commit' and \
         node.value[3].type == 'call'
-        )
-    assert commit_call is not None, \
+        ) is not None
+    assert commit_call, \
         'Are you calling the `db.session.commit()` function?'
 
 @pytest.mark.test_create_route_redirect_module2
@@ -260,14 +265,14 @@ def test_create_route_redirect_module2():
 
     return_redirect = error_check_if.find('return', lambda node: \
         node.value[0].value == 'redirect' and \
-        node.value[1].type == 'call')
-    assert return_redirect is not None, \
+        node.value[1].type == 'call') is not None
+    assert return_redirect, \
         'Are you returning a call to the `redirect()` function?'
 
     url_for_call = return_redirect.find_all('atomtrailers', lambda node: \
         node.value[0].value == 'url_for' and \
-        node.value[1].type == 'call')
-    assert url_for_call is not None, \
+        node.value[1].type == 'call') is not None
+    assert url_for_call, \
         'Are you passing a call to the `url_for()` function to the `redirect()` function?'
 
     url_for_args = list(url_for_call.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value.value).replace("'", '"')))
@@ -295,8 +300,8 @@ def test_edit_route_module2():
     assert accept_id, \
         'Is the `edit` route function accepting an argument of `id`?'
 
-    content = get_route('edit').find('assign', lambda node: node.target.value == 'content')
-    assert content is not None, \
+    content = get_route('edit').find('assign', lambda node: node.target.value == 'content') is not None
+    assert content, \
         'Are you setting the `content` variable correctly?'
     query_call = content.find('atomtrailers', lambda node: \
         node.value[0].value == 'Content' and \
@@ -304,8 +309,8 @@ def test_edit_route_module2():
         node.value[2].value == 'get_or_404' and \
         node.value[3].type == 'call' and \
         node.value[3].value[0].value.value == 'id'
-        )
-    assert query_call is not None, \
+        ) is not None
+    assert query_call, \
         'Are you calling the `Content.query.get_or_404()` function and are you passing in the correct argument?'
 
     edit_decorator = get_route('edit').find('dotted_name', lambda node: \
@@ -314,8 +319,8 @@ def test_edit_route_module2():
         node.value[2].value == 'route' and \
         node.parent.call.type == 'call' and \
         bool(re.search('/admin/edit/<(int:)?id>', node.parent.call.value[0].value.value))
-        )
-    assert edit_decorator is not None, \
+        ) is not None
+    assert edit_decorator, \
         'Have you add a route decorator to the `edit` route function? Are you passing the correct route pattern?'
 
     strings = list(get_methods_keyword('edit').find_all('string').map(lambda node: node.value.replace("'", '"')))
@@ -328,16 +333,17 @@ def test_edit_route_queries_module2():
     assert admin_module_exists, \
         'Have you created the `admin/__init__.py` file?'
 
-    type = get_route('edit').find('assign', lambda node: node.target.value == 'type')
-    assert type is not None, \
+    type = get_route('edit').find('assign', lambda node: \
+        node.target.value == 'type') is not None
+    assert type, \
         'Are you setting the `type` variable correctly?'
     get_call = type.find('atomtrailers', lambda node: \
         node.value[0].value == 'Type' and \
         node.value[1].value == 'query' and \
         node.value[2].value == 'get' and \
         node.value[3].type == 'call'
-        )
-    assert get_call is not None, \
+        ) is not None
+    assert get_call, \
         'Are you calling the `Type.query.get()` function and assigning the result to `type`?'
 
     get_call_argument = get_call.find('call_argument', lambda node: \
@@ -346,16 +352,17 @@ def test_edit_route_queries_module2():
     assert get_call_argument, \
         'Are you passing the correct argument to the `Type.query.get()` function?'
 
-    types = get_route('edit').find('assign', lambda node: node.target.value == 'types')
-    assert types is not None, \
+    types = get_route('edit').find('assign', lambda node: \
+        node.target.value == 'types') is not None
+    assert types, \
         'Are you setting the `types` variable correctly?'
     all_call = types.find('atomtrailers', lambda node: \
         node.value[0].value == 'Type' and \
         node.value[1].value == 'query' and \
         node.value[2].value == 'all' and \
         node.value[3].type == 'call'
-        )
-    assert all_call is not None, \
+        ) is not None
+    assert all_call, \
         'Are you calling the `Type.query.all()` function and assigning the result to `types`?'
 
 @pytest.mark.test_edit_route_render_template_module2
@@ -365,8 +372,8 @@ def test_edit_route_render_template_module2():
 
     return_render = get_route('edit').find('return', lambda node: \
         node.value[0].value == 'render_template' and \
-        node.value[1].type == 'call')
-    assert return_render is not None, \
+        node.value[1].type == 'call') is not None
+    assert return_render, \
         'Are you returning a call to the `render_template()` function?'
 
     return_render_args = list(return_render.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value).replace("'", '"')))
@@ -445,8 +452,9 @@ def test_edit_route_form_data_module2():
     get_form_data('edit', 'content.type_id')
     get_form_data('edit', 'content.body')
 
-    content_updated_at = get_request_method(route).find('assign', lambda node: str(node.target) == 'content.updated_at')
-    assert content_updated_at is not None, \
+    content_updated_at = get_request_method(route).find('assign', lambda node: \
+        str(node.target) == 'content.updated_at') is not None
+    assert content_updated_at, \
         'Do you have a variable named `content_updated_at`?'
     right = variable.find('atomtrailers', lambda node: \
         node.value[0].value == 'datetime' and \
@@ -456,8 +464,9 @@ def test_edit_route_form_data_module2():
     assert right, \
         'Are you setting `content.updated_at` to the current date?'
 
-    error = get_request_method('create').find('assign', lambda node: node.target.value == 'error')
-    assert error is not None, \
+    error = get_request_method('create').find('assign', lambda node: \
+        node.target.value == 'error') is not None
+    assert error, \
         'Do you have a variable named `error`?'
     error_none = error.value.to_python() is None
     assert error_none, \
@@ -501,20 +510,20 @@ def test_edit_route_update_data_module2():
         node.value[1].value == 'session' and \
         node.value[2].value == 'commit' and \
         node.value[3].type == 'call'
-        )
-    assert commit_call is not None, \
+        ) is not None
+    assert commit_call, \
         'Are you calling the `db.session.commit()` function?'
 
     return_redirect = error_check_if.find('return', lambda node: \
         node.value[0].value == 'redirect' and \
-        node.value[1].type == 'call')
-    assert return_redirect is not None, \
+        node.value[1].type == 'call') is not None
+    assert return_redirect, \
         'Are you returning a call to the `redirect()` function?'
 
     url_for_call = return_redirect.find_all('atomtrailers', lambda node: \
         node.value[0].value == 'url_for' and \
-        node.value[1].type == 'call')
-    assert url_for_call is not None, \
+        node.value[1].type == 'call') is not None
+    assert url_for_call, \
         'Are you passing a call to the `url_for()` function to the `redirect()` function?'
 
     url_for_args = list(url_for_call.find_all('call_argument').map(lambda node: \

@@ -49,23 +49,23 @@ def test_admin_blueprint_models_file_imports_module1():
     import_sql = models_code().find('name', lambda node: \
         node.value == 'flask_sqlalchemy' and \
         node.parent.type == 'from_import' and \
-        node.parent.targets[0].value == 'SQLAlchemy')
-    assert import_sql is not None, \
+        node.parent.targets[0].value == 'SQLAlchemy') is not None
+    assert import_sql, \
         'Are you importing `SQLAlchemy` from `flask_sqlalchemy` at the top of `models.py`?'
 
     import_datetime = models_code().find('name', lambda node: \
         node.value == 'datetime' and \
         node.parent.type == 'from_import' and \
-        node.parent.targets[0].value == 'datetime')
-    assert import_datetime is not None, \
+        node.parent.targets[0].value == 'datetime') is not None
+    assert import_datetime, \
         'Are you importing `datetime` from `datetime`?'
 
     db_assignment = models_code().find('atomtrailers', lambda node: \
         node.value[0].value == 'SQLAlchemy' and \
         node.value[1].type == 'call' and \
         node.parent.type == 'assignment' and \
-        node.parent.target.value == 'db')
-    assert db_assignment is not None, \
+        node.parent.target.value == 'db') is not None
+    assert db_assignment, \
         'Are you creating an new `SQLAlchemy` instance named `db`?'
     no_arguments = len(db_assignment.find_all('call_argument')) == 0
     assert no_arguments, \
@@ -102,8 +102,9 @@ def test_admin_blueprint_move_model_classes_module1():
     assert main_module_class_count, \
         'Have you moved the four models from `__init__.py` to `cms/admin/models.py`'
 
-    main_module_import = main_module_code().find('from_import', lambda node: node.find('name', value='models'))
-    assert main_module_import is not None, \
+    main_module_import = main_module_code().find('from_import', lambda node: \
+        node.find('name', value='models')) is not None
+    assert main_module_import, \
         'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__.py`?'
     model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
     import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
@@ -137,22 +138,22 @@ def test_cms_module_remove_imports_module1():
         node.value[0].value == 'SQLAlchemy' and \
         node.value[1].type == 'call' and \
         node.parent.type == 'assignment' and \
-        node.parent.target.value == 'db')
-    assert db_assignment is None, \
+        node.parent.target.value == 'db') is None
+    assert db_assignment, \
         'Have you removed the `SQLAlchemy` instance named `db` from `__init__.py`?'
 
     main_import_sql = main_module_code().find('name', lambda node: \
         node.value == 'flask_sqlalchemy' and \
         node.parent.type == 'from_import' and \
-        node.parent.targets[0].value == 'SQLAlchemy')
-    assert main_import_sql is None, \
+        node.parent.targets[0].value == 'SQLAlchemy') is None
+    assert main_import_sql, \
         'Have you removed the import for `flask_sqlalchemy` from `__init__.py`?'
 
     main_import_datetime = main_module_code().find('name', lambda node: \
         node.value == 'datetime' and \
         node.parent.type == 'from_import' and \
-        node.parent.targets[0].value == 'datetime')
-    assert main_import_datetime is None, \
+        node.parent.targets[0].value == 'datetime') is None
+    assert main_import_datetime, \
         'Have you removed the import for `datetime` from `__init__.py`?'
 
 @pytest.mark.test_cms_module_import_db_module1
@@ -162,26 +163,27 @@ def test_cms_module_import_db_module1():
     assert main_module_exists, \
         'Have do you have an `__init__.py` file in the root folder?'
 
-    main_module_import = main_module_code().find('from_import', lambda node: node.find('name', value='models'))
-    assert main_module_import is not None, \
+    main_module_import = main_module_code().find('from_import', lambda node: \
+        node.find('name', value='models')) is not None
+    assert main_module_import, \
         'Are you importing the correct methods and classes from `cms.admin.models`?'
     model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
     main_import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
     assert main_import_path, \
         'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__/py`?'
 
-    name_as_name_db = main_module_import.find('name_as_name', value='db')
-    assert name_as_name_db is not None, \
+    name_as_name_db = main_module_import.find('name_as_name', value='db') is not None
+    assert name_as_name_db, \
         'Are you importing the `db` SQLAlchemy instance from `cms.admin.models` in `cms/__init__/py`?'
 
     init_app_call = main_module_code().find('name', lambda node: \
         node.value == 'init_app' and \
         node.parent.value[0].value == 'db' and \
-        node.parent.value[2].type == 'call')
-    assert init_app_call is not None, \
+        node.parent.value[2].type == 'call') is not None
+    assert init_app_call, \
         'Are you calling the `init_app` method on `db`?'
-    init_app_arg = init_app_call.parent.find('call_argument').value.value
-    assert init_app_arg == 'app', \
+    init_app_arg = init_app_call.parent.find('call_argument').value.value == 'app'
+    assert init_app_arg, \
         'Are you passing `app` to the `init_app` method?'
 
 @pytest.mark.test_admin_blueprint_create_blueprint_module1
@@ -193,16 +195,16 @@ def test_admin_blueprint_create_blueprint_module1():
 
     blueprint_from = module_code().find('from_import', lambda node: \
         node.value[0].value == 'flask' and \
-        'Blueprint' in list(node.targets.map(lambda node: str(node))))
-    assert blueprint_from is not None, \
+        'Blueprint' in list(node.targets.map(lambda node: str(node)))) is not None
+    assert blueprint_from, \
         'Are you importing `Blueprint` from `flask` in `admin/__init.py`?'
 
-    admin_bp = module_code().find('assign', lambda node: node.target.value == 'admin_bp')
-    assert admin_bp is not None, \
+    admin_bp = module_code().find('assign', lambda node: node.target.value == 'admin_bp') is not None
+    assert admin_bp, \
         'Are you setting the `admin_bp` variable correctly?'
 
-    blueprint_instance = admin_bp.find('atomtrailers', lambda node: node.value[0].value == 'Blueprint')
-    assert blueprint_instance is not None, \
+    blueprint_instance = admin_bp.find('atomtrailers', lambda node: node.value[0].value == 'Blueprint') is not None
+    assert blueprint_instance, \
         'Are you setting the `admin_bp` variable to an instance of `Content`?'
     
     blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
@@ -225,8 +227,8 @@ def test_admin_blueprint_imports_module1():
     assert module_exists, \
         'Have you added the `__init__.py` file to the `admin` blueprint folder?'
 
-    flask_import = module_code().find('from_import', lambda node: node.value[0].value == 'flask')
-    assert flask_import is not None, \
+    flask_import = module_code().find('from_import', lambda node: node.value[0].value == 'flask') is not None
+    assert flask_import, \
         'Are you importing the correct methods and classes from `flask`?'
     from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
     render_template_import = 'render_template' in from_flask_imports
@@ -236,8 +238,8 @@ def test_admin_blueprint_imports_module1():
     assert abort_import, \
         'Are you importing `abort` from `flask` in `admin/__init__.py`?'
 
-    module_import = module_code().find('from_import', lambda node: node.find('name', value='models'))
-    assert module_import is not None, \
+    module_import = module_code().find('from_import', lambda node: node.find('name', value='models')) is not None
+    assert module_import, \
         'Are you importing the correct methods and classes from `cms.admin.models`?'
     model_path = list(module_import.find_all('name').map(lambda node: node.value))
     import_path = module_import is not None and ':'.join(model_path) == 'cms:admin:models'
@@ -270,12 +272,12 @@ def test_admin_blueprint_move_routes_module1():
     assert main_module_exists, \
         'Have do you have an `__init__.py` file in the root folder?'
 
-    requested_type = module_code().find('def', name='requested_type')
-    assert requested_type is not None, \
+    requested_type = module_code().find('def', name='requested_type') is not None
+    assert requested_type, \
         'Did you move the `requested_type` function from `__init__.py` to `admin/__init__.py`?'
 
-    content_route = module_code().find('def', name='content')
-    assert content_route is not None, \
+    content_route = module_code().find('def', name='content') is not None
+    assert content_route, \
         'Did you move the `user` function from `__init__.py` to `admin/__init__.py`?'
     content_decorators = content_route.find_all('dotted_name')
     content_decorator_count = len(content_decorators) == 2
@@ -288,8 +290,8 @@ def test_admin_blueprint_move_routes_module1():
     assert content_blueprint_route2, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `content` function?'
 
-    create_route = module_code().find('def', name='create')
-    assert create_route is not None, \
+    create_route = module_code().find('def', name='create') is not None
+    assert create_route, \
         'Did you move the `user` function from `__init__.py` to `admin/__init__.py`?'
     create_decorators = create_route.find_all('dotted_name')
     create_decorator_count = len(create_decorators) == 1
@@ -299,8 +301,8 @@ def test_admin_blueprint_move_routes_module1():
     assert create_blueprint_routes, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
 
-    users_route = module_code().find('def', name='users')
-    assert users_route is not None, \
+    users_route = module_code().find('def', name='users') is not None
+    assert users_route, \
         'Did you move the `user` function from `__init__.py` to `admin/__init__.py`?'
     users_decorators = users_route.find_all('dotted_name')
     users_decorator_count = len(users_decorators) == 1
@@ -310,8 +312,8 @@ def test_admin_blueprint_move_routes_module1():
     assert users_blueprint_routes, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `users` function?'
 
-    settings_route = module_code().find('def', name='settings')
-    assert settings_route is not None, \
+    settings_route = module_code().find('def', name='settings') is not None
+    assert settings_route, \
         'Did you move the `settings` function from `__init__.py` to `admin/__init__.py`?'
     settings_decorators = settings_route.find_all('dotted_name')
     settings_decorator_count = len(settings_decorators) == 1
@@ -321,20 +323,20 @@ def test_admin_blueprint_move_routes_module1():
     assert settings_blueprint_routes, \
         'Have you changed the `@app` decorator to `@admin_ap` on the `settings` function?'
 
-    def_content = main_module_code().find('def', name='content')
-    assert def_content is None, \
+    def_content = main_module_code().find('def', name='content') is None
+    assert def_content, \
         'Did you remove the `content` function from `__init__.py`?'
 
     def_create = main_module_code().find('def', name='create') is None
     assert def_create, \
         'Did you remove the `create` function from `__init__.py`?'
 
-    def_users = main_module_code().find('def', name='users') 
-    assert def_users is None, \
+    def_users = main_module_code().find('def', name='users') is None
+    assert def_users, \
         'Did you remove the `users` function from `__init__.py`?'
 
-    def_settings = main_module_code().find('def', name='settings') 
-    assert def_settings is None, \
+    def_settings = main_module_code().find('def', name='settings') is None
+    assert def_settings, \
         'Did you remove the `settings` function from `__init__.py`?'
 
 @pytest.mark.test_cms_module_register_blueprint_module1
@@ -344,8 +346,9 @@ def test_cms_module_register_blueprint_module1():
     assert main_module_exists, \
         'Have do you have an `__init__.py` file in the root folder?'
 
-    bp_import = main_module_code().find('from_import', lambda node: node.find('name_as_name', value='admin_bp'))
-    assert bp_import is not None, \
+    bp_import = main_module_code().find('from_import', lambda node: \
+        node.find('name_as_name', value='admin_bp')) is not None
+    assert bp_import, \
         'Are you importing `admin_bp` from `cms.admin` in `cms/__init__.py`?'
 
     model_path = list(bp_import.find_all('name').map(lambda node: node.value))
@@ -356,11 +359,12 @@ def test_cms_module_register_blueprint_module1():
     register_bp_call = main_module_code().find('atomtrailers', lambda node: \
         node.value[0].value == 'app' and \
         node.value[1].value == 'register_blueprint' and \
-        node.value[2].type == 'call')
-    assert register_bp_call is not None, \
+        node.value[2].type == 'call') is not None
+    assert register_bp_call, \
         'Are you calling `register_blueprint` on `app`?'
 
-    register_blueprint_args = list(register_bp_call.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
+    register_blueprint_args = list(register_bp_call.find_all('call_argument').map(lambda node: \
+        str(node.target) + ':' + str(node.value)))
     register_count = len(register_blueprint_args) == 1
     assert register_count, \
         'Are you only passing one argument to `register_blueprint`?'
@@ -375,13 +379,16 @@ def test_admin_blueprint_template_folder_module1():
     assert module_exists, \
         'Have you added the `__init__.py` file to the `admin` blueprint folder?'
 
-    admin_bp = module_code().find('assign', lambda node: node.target.value == 'admin_bp')
-    assert admin_bp is not None, \
+    admin_bp = module_code().find('assign', lambda node: \
+        node.target.value == 'admin_bp') is not None
+    assert admin_bp, \
         'Are you setting the `admin_bp` variable correctly?'
-    blueprint_instance = admin_bp.find('atomtrailers', lambda node: node.value[0].value == 'Blueprint')
-    assert blueprint_instance is not None, \
+    blueprint_instance = admin_bp.find('atomtrailers', lambda node: \
+        node.value[0].value == 'Blueprint') is not None
+    assert blueprint_instance, \
         'Are you setting the `admin_bp` variable to an instance of `Content`?'
-    blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
+    blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: \
+        str(node.target) + ':' + str(node.value)))
     blueprint_template_folder = "template_folder:'templates'" in blueprint_args
     assert blueprint_template_folder, \
         "Are you passing the Blueprint instance the correct arguments? There should be a `template_folder` keyword argument set to `'/admin'`."
