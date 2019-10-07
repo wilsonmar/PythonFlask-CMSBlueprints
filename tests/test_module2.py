@@ -270,14 +270,14 @@ def test_create_route_redirect_module2():
         (error_check.first.value == 'None' and error_check.second.value == 'error')) and \
         (error_check.value.first == '==' or error_check.value.first == 'is')
     assert error_check_exists, \
-        'Do you have an if statment that is checking if `error` is `None`?'
+        'Do you have an `if` statment that is checking if `error` is `None`?'
     error_check_if = error_check.parent
 
     return_redirect = error_check_if.find('return', lambda node: \
         node.value[0].value == 'redirect' and \
         node.value[1].type == 'call')
     return_redirect_exists = return_redirect is not None
-    assert return_redirect, \
+    assert return_redirect_exists, \
         'Are you returning a call to the `redirect()` function?'
 
     url_for_call = return_redirect.find_all('atomtrailers', lambda node: \
