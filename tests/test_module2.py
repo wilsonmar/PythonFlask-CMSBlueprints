@@ -178,19 +178,19 @@ def test_create_route_validate_data_module2():
     title_error = get_request_method('create').find('unitary_operator', lambda node: node.target.value == 'title')
     title_if_exists = title_error is not None and title_error.parent is not None and title_error.parent.type == 'if'
     assert title_if_exists, \
-        'Do you have an `if` statement that tests if `title` is `not` empty.'
+        'Do you have a nested `if` statement that tests if `title` is `not` empty.'
     title_error_message = title_error.parent.find('assign', lambda node: node.target.value == 'error')
     title_error_message_exists = title_error_message is not None and title_error_message.value.type == 'string'
     assert title_error_message_exists, \
         'Are you setting the `error` variable to the appropriate `string` in the `if` statement.'
 
-    type_error = get_request_method('create').find('unitary_operator', lambda node: node.target.value == 'type')
-    type_elif_exists = type_error is not None and type_error.parent is not None and type_error.parent.type == 'elif'
-    assert type_elif_exists, \
-        'Do you have an `if` statement that tests if `type` is `not` empty.'
-    type_error_message = type_error.parent.find('assign', lambda node: node.target.value == 'error')
-    set_type_error_message = type_error_message is not None and type_error_message.value.type == 'string'
-    assert set_type_error_message, \
+    type_id_error = get_request_method('create').find('unitary_operator', lambda node: node.target.value == 'type_id')
+    type_id_elif_exists = type_id_error is not None and type_id_error.parent is not None and type_id_error.parent.type == 'elif'
+    assert type_id_elif_exists, \
+        'Do you have a nested `if` statement that tests if `type` is `not` empty.'
+    type_id_error_message = type_id_error.parent.find('assign', lambda node: node.target.value == 'error')
+    type_id_error_message_exists = type_id_error_message is not None and type_id_error_message.value.type == 'string'
+    assert type_id_error_message_exists, \
         'Are you setting the `error` variable to the appropriate `string` in the `elif` statement.'
 
 @pytest.mark.test_create_route_insert_data_module2
@@ -204,7 +204,7 @@ def test_create_route_insert_data_module2():
         (error_check.first.value == 'None' and error_check.second.value == 'error')) and \
         (error_check.value.first == '==' or error_check.value.first == 'is')
     assert error_check_exists, \
-        'Do you have an if statment that is checking if `error` is `None`?'
+        'Do you have an `if` statment that is checking if `error` is `None`?'
 
     error_check_if = error_check.parent
     content = error_check_if.find('assign', lambda node: \
@@ -501,7 +501,7 @@ def test_edit_route_validate_data_module2():
         str(node.target.value[2]).replace("'", '"') == '["{}"]'.format('title'))
     title_if_exists = title_error is not None and title_error.parent is not None and title_error.parent.type == 'if'
     assert title_if_exists, \
-        'Do you have an `if` statement that tests if `title` is `not` empty.'
+        'Do you have a nested `if` statement that tests if `title` is `not` empty.'
 
     title_error_message = title_error.parent.find('assign', lambda node: node.target.value == 'error')
     title_error_message_exists = title_error_message is not None and title_error_message.value.type == 'string'
