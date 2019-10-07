@@ -203,12 +203,14 @@ def test_admin_blueprint_create_blueprint_module1():
     assert blueprint_from, \
         'Are you importing `Blueprint` from `flask` in `cms/admin/__init__.py`?'
 
-    admin_bp = module_code().find('assign', lambda node: node.target.value == 'admin_bp') is not None
-    assert admin_bp, \
+    admin_bp = module_code().find('assign', lambda node: node.target.value == 'admin_bp')
+    admin_bp_exists = admin_bp is not None
+    assert admin_bp_exists, \
         'Are you setting the `admin_bp` variable correctly?'
 
-    blueprint_instance = admin_bp.find('atomtrailers', lambda node: node.value[0].value == 'Blueprint') is not None
-    assert blueprint_instance, \
+    blueprint_instance = admin_bp.find('atomtrailers', lambda node: node.value[0].value == 'Blueprint')
+    blueprint_instance_exists = blueprint_instance is not None
+    assert blueprint_instance_exists, \
         'Are you setting the `admin_bp` variable to an instance of `Content`?'
     
     blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
@@ -231,8 +233,9 @@ def test_admin_blueprint_imports_module1():
     assert module_exists, \
         'Have you added the `__init__.py` file to the `admin` blueprint folder?'
 
-    flask_import = module_code().find('from_import', lambda node: node.value[0].value == 'flask') is not None
-    assert flask_import, \
+    flask_import = module_code().find('from_import', lambda node: node.value[0].value == 'flask')
+    flask_import_exits = flask_import  is not None
+    assert flask_import_exits, \
         'Are you importing the correct methods and classes from `flask`?'
     from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
     render_template_import = 'render_template' in from_flask_imports
