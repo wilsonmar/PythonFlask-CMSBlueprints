@@ -355,7 +355,8 @@ def test_edit_route_module2():
     assert accept_id, \
         'Is the `edit` route function accepting an argument of `id`?'
 
-    content = get_route('edit').find('assign', lambda node: node.target.value == 'content') is not None
+    content = get_route('edit').find('assign', lambda node: \
+        node.target.value == 'content')
     content_exists = content is not None
     assert content_exists, \
         'Are you setting the `content` variable correctly?'
