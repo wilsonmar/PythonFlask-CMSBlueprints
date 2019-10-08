@@ -506,11 +506,13 @@ def test_edit_route_form_data_module2():
     post_check = str(get_request_method('edit', False)).find('POST')
     assert post_check, \
         'Are you testing if the request method is `POST`?'
-
-    get_form_data('edit', 'content.title')
-    get_form_data('edit', 'content.slug')
-    get_form_data('edit', 'content.type_id')
-    get_form_data('edit', 'content.body')
+    try:
+        get_form_data('edit', 'content.title')
+        get_form_data('edit', 'content.slug')
+        get_form_data('edit', 'content.type_id')
+        get_form_data('edit', 'content.body')
+    except:
+        assert False, 'Are you setting all proprties of the `content` object correctly?'
 
     content_updated_at = get_request_method('edit').find('assign', lambda node: \
         str(node.target) == 'content.updated_at')
