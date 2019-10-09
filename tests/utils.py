@@ -83,10 +83,12 @@ def filters(name):
         filters.append(simplify(node))
     return filters
 
-def for_statement(name):
+def get_calls(name):
     for_loop = parsed_content(name).find(nodes.For)
-    for node in for_loop.find_all(nodes.Getattr):
-        print(node)
+    calls = []
+    for node in for_loop.find_all(nodes.Call):
+        calls.append(simplify(node))
+    return calls
 
 def simplify(main):
     def _simplify(node):
