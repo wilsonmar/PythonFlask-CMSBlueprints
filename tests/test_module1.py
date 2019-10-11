@@ -213,8 +213,8 @@ def test_admin_blueprint_create_blueprint_module1():
     assert blueprint_instance_exists, \
         'Are you setting the `admin_bp` variable to an instance of `Content`?'
 
-    blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value)))
-    admin_first = "None:'admin'" in blueprint_args
+    blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: str(node.target) + ':' + str(node.value).replace("'", '"')))
+    admin_first = 'None:"admin"' in blueprint_args
     assert admin_first, \
         "Are you passing the Blueprint instance the correct arguments? The first argument should be: `'admin'`."
 
@@ -222,7 +222,7 @@ def test_admin_blueprint_create_blueprint_module1():
     assert name_second, \
         'Are you passing the Blueprint instance the correct arguments? The second argument should be: `__name__`.'
 
-    url_prefix = "url_prefix:'/admin'" in blueprint_args
+    url_prefix = 'url_prefix:"/admin"' in blueprint_args
     assert url_prefix, \
         "Are you passing the Blueprint instance the correct arguments? There should be a url_prefix keyword argument set to `'/admin'`."
 
@@ -404,10 +404,10 @@ def test_admin_blueprint_template_folder_module1():
     assert blueprint_instance_exists, \
         'Are you setting the `admin_bp` variable to an instance of `Content`?'
     blueprint_args = list(blueprint_instance.find_all('call_argument').map(lambda node: \
-        str(node.target) + ':' + str(node.value)))
-    blueprint_template_folder = "template_folder:'templates'" in blueprint_args
+        str(node.target) + ':' + str(node.value).replace("'", '"')  ))
+    blueprint_template_folder = 'template_folder:"templates"' in blueprint_args
     assert blueprint_template_folder, \
-        "Are you passing the Blueprint instance the correct arguments? There should be a `template_folder` keyword argument set to `'/admin'`."
+        "Are you passing the Blueprint instance the correct arguments? There should be a `template_folder` keyword argument set to `'templates'`."
 
     admin_templates = admin / 'templates'
     admin_templates_exists = Path.exists(admin_templates) and Path.is_dir(admin_templates)
