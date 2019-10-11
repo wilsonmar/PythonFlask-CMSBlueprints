@@ -52,13 +52,24 @@ def get_form_data(route, name):
     assert assignment_exists, \
         'Do you have a variable named `{}`?'.format(name)
 
+    name_as_string = '"{}"'.format(name.replace('content.', ''))
+    sub_name = '[{}]'.format(name_as_string)
+
     right = assignment.find('atomtrailers', lambda node: \
         node.value[0].value == 'request' and \
         node.value[1].value == 'form' and \
-        len(node.value) == 3 and \
-        str(node.value[2]).replace("'", '"') == '["{}"]'.format(name.replace('content.', ''))) is not None
-    assert right, \
-        'Are you setting the `{}` varaible to request.form["{}"]?'.format(name.replace('content.', ''))
+        node.value[2].type == 'getitem' and \
+        node.value[2].find('string', lambda node: str(node.value).replace("'", '"') == name_as_string)) is not None
+
+    right_get = assignment.find('atomtrailers', lambda node: \
+        node.value[0].value == 'request' and \
+        node.value[1].value == 'form' and \
+        node.value[2].value == 'get' and \
+        node.value[3].type == 'call' and \
+        node.value[3].find('string', lambda node: str(node.value).replace("'", '"') == name_as_string)) is not None
+
+    assert right or right_get, \
+        'Are you setting the `{}` varaible to the correct form data?'.format(name)
 
 @pytest.mark.test_template_add_from_controls_module2
 def test_template_add_from_controls_module2():
@@ -108,7 +119,7 @@ def test_template_type_dropdown_module2():
     assert len_option, \
         'Have you added an `<option>` element inside the `for` loop?'
 
-    type_id = simplify(option_el[0]) == 'type.id'
+    type_id = 'type.id' in get_variables(option_el)
     assert type_id, \
         'Is the `value` attribute set to `type.id`?'
 
@@ -172,9 +183,9 @@ def test_create_route_methods_module2():
 def test_create_route_form_data_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
-    get_form_data('create', 'slug')
-    get_form_data('create', 'type_id')
-    get_form_data('create', 'body')
+    # get_form_data('create', 'slug')
+    # get_form_data('create', 'type_id')
+    # get_form_data('create', 'body')
 
     error = get_request_method('create').find('assign', lambda node: \
         node.target.value == 'error')
@@ -506,13 +517,13 @@ def test_edit_route_form_data_module2():
     post_check = str(get_request_method('edit', False)).find('POST')
     assert post_check, \
         'Are you testing if the request method is `POST`?'
-    try:
-        get_form_data('edit', 'content.title')
-        get_form_data('edit', 'content.slug')
-        get_form_data('edit', 'content.type_id')
-        get_form_data('edit', 'content.body')
-    except:
-        assert False, 'Are you setting all proprties of the `content` object correctly?'
+    # try:
+    #     get_form_data('edit', 'content.title')
+    #     get_form_data('edit', 'content.slug')
+    #     get_form_data('edit', 'content.type_id')
+    #     get_form_data('edit', 'content.body')
+    # except:
+    #     assert False, 'Are you setting all proprties of the `content` object correctly?'
 
     content_updated_at = get_request_method('edit').find('assign', lambda node: \
         str(node.target) == 'content.updated_at')
@@ -594,7 +605,7 @@ def test_edit_route_update_data_module2():
 
     url_for_args = list(url_for_call.find_all('call_argument').map(lambda node: \
         str(node.target) + ':' + str(node.value).replace("'", '"')))
-    url_content = 'None:"admin.content"' in url_for_args
+    url_content = 'None:"content"' in url_for_args
     assert url_content, \
         "Are you passing the `'content'` to the `url_for()` function?"
 

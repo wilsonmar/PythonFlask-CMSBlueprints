@@ -66,7 +66,7 @@ def select_code(content, start, end):
             found = False
 
         if found and not isinstance(node, nodes.TemplateData):
-                code.append(node)
+            code.append(node)
     return code
 
 def is_for(node):
@@ -89,6 +89,13 @@ def get_calls(name):
     for node in for_loop.find_all(nodes.Call):
         calls.append(simplify(node))
     return calls
+
+def get_variables(elements):
+    variables = []
+    for element in elements:
+        if isinstance(element, nodes.Getattr):
+            variables.append(simplify(element))
+    return variables
 
 def simplify(main):
     def _simplify(node):
