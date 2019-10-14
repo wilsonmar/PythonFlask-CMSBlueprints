@@ -1,10 +1,9 @@
 import pytest
 
 from pathlib import Path
-
 from redbaron import RedBaron
 
-from tests.utils import template_data, template_functions
+from tests.utils import template_data, template_functions, get_imports
 
 main_module = Path.cwd() / 'cms' / '__init__.py'
 main_module_exists = Path.exists(main_module) and Path.is_file(main_module)
@@ -103,30 +102,25 @@ def test_admin_blueprint_move_model_classes_module1():
     assert main_module_class_count, \
         'Have you removed the four models from `cms/__init__.py`?'
 
-    main_module_import = main_module_code().find('from_import', lambda node: \
-        node.find('name', value='models'))
-    main_module_import_exists =  main_module_import is not None
-    assert main_module_import_exists, \
-        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__.py`?'
-    model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
-    import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
+    models_import = get_imports(main_module_code(), 'cms.admin.models') or get_imports(main_module_code(), '.admin.models')
+    models_import_exists = models_import is not None
+    assert models_import_exists, \
+        'Do you have an import from `cms.admin.models` statement?'
 
-    assert import_path, \
-        'Are you importing the correct methods and classes from `cms.admin.models`?'
-    name_as_name_content = main_module_import.find('name_as_name', value='Content') is not None
-    assert name_as_name_content, \
+    models_import_content = 'Content' in models_import
+    assert models_import_content, \
         'Are you importing the `Content` model class from `cms.admin.models` in `cms/__init__.py`?'
 
-    name_as_name_type = main_module_import.find('name_as_name', value='Type') is not None
-    assert name_as_name_type, \
+    models_import_type = 'Type' in models_import
+    assert models_import_type, \
         'Are you importing the `Type` model class from `cms.admin.models` in `cms/__init__.py`?'
 
-    name_as_name_setting =  main_module_import.find('name_as_name', value='Setting') is not None
-    assert name_as_name_setting, \
+    models_import_setting = 'Setting' in models_import
+    assert models_import_setting, \
         'Are you importing the `Setting` model class from `cms.admin.models` in `cms/__init__.py`?'
 
-    name_as_name_user =  main_module_import.find('name_as_name', value='User') is not None
-    assert name_as_name_user, \
+    models_import_user = 'User' in models_import
+    assert models_import_user, \
         'Are you importing the `User` model class from `cms.admin.models` in `cms/__init__.py`?'
 
 @pytest.mark.test_cms_module_import_db_module1
@@ -144,18 +138,14 @@ def test_cms_module_import_db_module1():
     assert db_assignment, \
         'Have you removed the `SQLAlchemy` instance named `db` from `cms/__init__.py`?'
 
-    main_module_import = main_module_code().find('from_import', lambda node: \
-        node.find('name', value='models'))
-    main_module_import_exists =  main_module_import is not None
-    assert main_module_import_exists, \
-        'Are you importing the correct methods and classes from `cms.admin.models`?'
-    model_path = list(main_module_import.find_all('name').map(lambda node: node.value))
-    main_import_path = main_module_import is not None and ':'.join(model_path) == 'cms:admin:models'
-    assert main_import_path, \
-        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__.py`?'
 
-    name_as_name_db = main_module_import.find('name_as_name', value='db') is not None
-    assert name_as_name_db, \
+    models_import = get_imports(main_module_code(), 'cms.admin.models') or get_imports(main_module_code(), '.admin.models')
+    models_import_exists = models_import is not None
+    assert models_import_exists, \
+        'Do you have an import from `cms.admin.models` statement?'
+
+    db_import_exists = 'db' in models_import
+    assert db_import_exists, \
         'Are you importing the `db` SQLAlchemy instance from `cms.admin.models` in `cms/__init__.py`?'
 
     init_app_call = main_module_code().find('name', lambda node: \
@@ -233,42 +223,38 @@ def test_admin_blueprint_imports_module1():
     assert module_exists, \
         'Have you added the `__init__.py` file to the `admin` blueprint folder?'
 
-    flask_import = module_code().find('from_import', lambda node: node.value[0].value == 'flask')
-    flask_import_exits = flask_import  is not None
+    flask_import = get_imports(module_code(), 'flask')
+    flask_import_exits = flask_import is not None
     assert flask_import_exits, \
         'Are you importing the correct methods and classes from `flask`?'
-    from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
-    render_template_import = 'render_template' in from_flask_imports
+    render_template_import = 'render_template' in flask_import
     assert render_template_import, \
         'Are you importing `render_template` from `flask` in `cms/admin/__init__.py`?'
-    abort_import = 'abort' in from_flask_imports
+    abort_import = 'abort' in flask_import
     assert abort_import, \
         'Are you importing `abort` from `flask` in `cms/admin/__init__.py`?'
 
-    module_import = module_code().find('from_import', lambda node: node.find('name', value='models'))
+    module_import = get_imports(module_code(), 'cms.admin.models') or get_imports(module_code(), '.models')
     module_import_exists = module_import is not None
     assert module_import_exists, \
         'Are you importing the correct methods and classes from `cms.admin.models` in `cms/admin/__init__.py`?'
-    model_path = list(module_import.find_all('name').map(lambda node: node.value))
-    import_path = module_import is not None and ':'.join(model_path) == 'cms:admin:models'
-    assert import_path, \
-        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/admin/__init__.py`?'
 
-    name_as_name_content = module_import.find('name_as_name', value='Content') is not None
+    name_as_name_content = 'Content' in module_import
     assert name_as_name_content, \
         'Are you importing the `Content` model class from `cms.admin.models` in `cms/admin/__init__.py`?'
 
-    name_as_name_type = module_import.find('name_as_name', value='Type') is not None
+    name_as_name_type = 'Type' in module_import
     assert name_as_name_type, \
         'Are you importing the `Type` model class from `cms.admin.models` in `cms/admin/__init__.py`?'
 
-    name_as_name_setting =  module_import.find('name_as_name', value='Setting') is not None
+    name_as_name_setting = 'Setting' in module_import
     assert name_as_name_setting, \
         'Are you importing the `Setting` model class from `cms.admin.models` in `cms/admin/__init__.py`?'
 
-    name_as_name_user =  module_import.find('name_as_name', value='User') is not None
+    name_as_name_user = 'User' in module_import
     assert name_as_name_user, \
         'Are you importing the `User` model class from `cms.admin.models` in `cms/admin/__init__.py`?'
+
 
 @pytest.mark.test_admin_blueprint_move_routes_module1
 def test_admin_blueprint_move_routes_module1():
@@ -300,7 +286,7 @@ def test_admin_blueprint_move_routes_module1():
         'Have you changed the `@app` decorator to `@admin_ap` on the `content` function?'
 
     create_route = module_code().find('def', name='create')
-    create_route_exists = content_route is not None
+    create_route_exists = create_route is not None
     assert create_route_exists, \
         'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
     create_decorators = create_route.find_all('dotted_name')
@@ -312,7 +298,7 @@ def test_admin_blueprint_move_routes_module1():
         'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
 
     users_route = module_code().find('def', name='users')
-    users_route_exists = content_route is not None
+    users_route_exists = users_route is not None
     assert users_route_exists, \
         'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
     users_decorators = users_route.find_all('dotted_name')
@@ -324,7 +310,7 @@ def test_admin_blueprint_move_routes_module1():
         'Have you changed the `@app` decorator to `@admin_ap` on the `users` function?'
 
     settings_route = module_code().find('def', name='settings')
-    settings_route_exists = content_route is not None
+    settings_route_exists = settings_route is not None
     assert settings_route_exists, \
         'Did you move the `settings` function from `__init__.py` to `cms/admin/__init__.py`?'
     settings_decorators = settings_route.find_all('dotted_name')
@@ -358,14 +344,12 @@ def test_cms_module_register_blueprint_module1():
     assert main_module_exists, \
         'Have do you have an `__init__.py` file in the `cms` application folder?'
 
-    bp_import = main_module_code().find('from_import', lambda node: \
-        node.find('name_as_name', value='admin_bp'))
+    bp_import = get_imports(main_module_code(), 'cms.admin') or get_imports(main_module_code(), '.admin')
     bp_import_exists = bp_import is not None
     assert bp_import_exists, \
-        'Are you importing `admin_bp` from `cms.admin` in `cms/__init__.py`?'
+        'Do you have an import from `cms.admin` statement?'
 
-    model_path = list(bp_import.find_all('name').map(lambda node: node.value))
-    admin_bp_import = bp_import is not None and ':'.join(model_path) == 'cms:admin'
+    admin_bp_import = 'admin_bp' in bp_import
     assert admin_bp_import, \
         'Are you importing the `admin_bp` Blueprint from `cms.admin`?'
 

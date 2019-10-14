@@ -1,5 +1,6 @@
 import pytest
 import re
+
 from pathlib import Path
 from redbaron import RedBaron
 
@@ -162,12 +163,11 @@ def test_create_route_methods_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
 
-    flask_import = admin_module_code().find('from_import', lambda node: node.value[0].value == 'flask')
-    flask_import_exits = flask_import  is not None
+    flask_import = get_imports(admin_module_code(), 'flask')
+    flask_import_exits = flask_import is not None
     assert flask_import_exits, \
         'Do you have an import from `flask` statement?'
-    from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
-    request_import = 'request' in from_flask_imports
+    request_import = 'request' in flask_import
     assert request_import, \
         'Are you importing `request` from `flask` in `cms/admin/__init__.py`?'
 
@@ -266,20 +266,14 @@ def test_create_route_insert_data_module2():
     assert content_count, \
         'Are you passing the correct number of keyword arguments to the `Content` instance?'
 
-    module_import = admin_module_code().find('from_import', lambda node: \
-        node.find('name', value='models'))
-    module_import_exists =  module_import is not None
+    module_import = get_imports(admin_module_code(), 'cms.admin.models') or get_imports(admin_module_code(), '.models')
+    module_import_exists = module_import is not None
     assert module_import_exists, \
-        'Are you importing the correct methods and classes from `cms.admin.models`?'
-    model_path = list(module_import.find_all('name').map(lambda node: node.value))
-    import_path = module_import is not None and ':'.join(model_path) == 'cms:admin:models'
-    assert import_path, \
-        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/__init__.py`?'
+        'Are you importing the correct methods and classes from `cms.admin.models` in `cms/admin/__init__.py`?'
 
-    name_as_name_db = module_import.find('name_as_name', value='db') is not None
+    name_as_name_db = 'db' in module_import
     assert name_as_name_db, \
         'Are you importing the `db` SQLAlchemy instance from `cms.admin.models` in `admin/cms/__init__.py`?'
-
 
     add_call = error_check_if.find('atomtrailers', lambda node: \
         node.value[0].value == 'db' and \
@@ -305,15 +299,15 @@ def test_create_route_redirect_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
 
-    flask_import = admin_module_code().find('from_import', lambda node: node.value[0].value == 'flask')
-    flask_import_exits = flask_import  is not None
+    flask_import = get_imports(admin_module_code(), 'flask')
+    flask_import_exits = flask_import is not None
     assert flask_import_exits, \
         'Do you have an import from `flask` statement?'
-    from_flask_imports = list(flask_import.targets.find_all('name_as_name').map(lambda node: node.value ))
-    redirect_import = 'redirect' in from_flask_imports
+
+    redirect_import = 'redirect' in flask_import
     assert redirect_import, \
         'Are you importing `redirect` from `flask` in `cms/admin/__init__.py`?'
-    url_for_import = 'url_for' in from_flask_imports
+    url_for_import = 'url_for' in flask_import
     assert url_for_import, \
         'Are you importing `url_for` from `flask` in `cms/admin/__init__.py`?'
 

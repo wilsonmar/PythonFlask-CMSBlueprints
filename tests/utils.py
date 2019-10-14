@@ -97,6 +97,10 @@ def get_variables(elements):
             variables.append(simplify(element))
     return variables
 
+def get_imports(code, value):
+    imports = code.find_all('from_import',  lambda node: ''.join(list(node.value.node_list.map(lambda node: str(node)))) == value).find_all('name_as_name')
+    return list(imports.map(lambda node: node.value))
+
 def simplify(main):
     def _simplify(node):
         if not isinstance(node, nodes.Node):
