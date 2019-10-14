@@ -545,12 +545,9 @@ def test_edit_route_form_data_module2():
 def test_edit_route_validate_data_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
-    title_error = get_request_method('edit').find('unitary_operator', lambda node: \
-        node.target.value[0].value == 'request' and \
-        node.target.value[1].value == 'form' and \
-        len(node.target.value) == 3 and \
-        str(node.target.value[2]).replace("'", '"') == '["{}"]'.format('title'))
-    title_if_exists = title_error is not None and title_error.parent is not None and title_error.parent.type == 'if'
+
+    title_error = get_if_statements(get_request_method('edit'), ['not:request.form["title"]', 'request.form["title"]:is:None', 'request.form["title"]:==:None', 'request.form["title"]:is:""', 'request.form["title"]:==:""'], True)
+    title_if_exists = title_error is not None
     assert title_if_exists, \
         'Do you have a nested `if` statement that tests if `title` is `not` empty.'
 

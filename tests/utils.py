@@ -101,6 +101,20 @@ def get_imports(code, value):
     imports = code.find_all('from_import',  lambda node: ''.join(list(node.value.node_list.map(lambda node: str(node)))) == value).find_all('name_as_name')
     return list(imports.map(lambda node: node.value))
 
+def get_if_statements(code, values, nested=False):
+    def flat(node):
+        if node.type == 'comparison':
+            return '{}:{}:{}'.format(str(node.first).replace("'", '"'), str(node.value), str(node.second).replace("'", '"'))
+        elif node.type == 'unitary_operator':
+            return '{}:{}'.format(str(node.value), str(node.target).replace("'", '"'))
+
+    nodes = code.value if nested else code
+    for value in values:
+        final_node = nodes.find_all('if').find(['comparison', 'unitary_operator'], lambda node: flat(node) == value)
+        if final_node is not None:
+            return final_node
+    return None
+
 def simplify(main):
     def _simplify(node):
         if not isinstance(node, nodes.Node):
