@@ -183,9 +183,9 @@ def test_create_route_methods_module2():
 def test_create_route_form_data_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
-    # get_form_data('create', 'slug')
-    # get_form_data('create', 'type_id')
-    # get_form_data('create', 'body')
+    get_form_data('create', 'slug')
+    get_form_data('create', 'type_id')
+    get_form_data('create', 'body')
 
     error = get_request_method('create').find('assign', lambda node: \
         node.target.value == 'error')
