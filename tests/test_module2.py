@@ -201,8 +201,9 @@ def test_create_route_validate_data_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
 
-    title_error = get_request_method('create').find('unitary_operator', lambda node: node.target.value == 'title')
-    title_if_exists = title_error is not None and title_error.parent is not None and title_error.parent.type == 'if'
+    title_error = get_conditional(get_request_method('edit'), ['not:request.form["title"]', 'request.form["title"]:is:None', 'request.form["title"]:==:None', 'request.form["title"]:is:""', 'request.form["title"]:==:""', 'not:title', 'title:is:None', 'title:==:None', 'title:is:""', 'title:==:""'], 'if', True)
+
+    title_if_exists = title_error is not None
     assert title_if_exists, \
         'Do you have a nested `if` statement that tests if `title` is `not` empty.'
     title_error_message = title_error.parent.find('assign', lambda node: node.target.value == 'error')
@@ -210,8 +211,8 @@ def test_create_route_validate_data_module2():
     assert title_error_message_exists, \
         'Are you setting the `error` variable to the appropriate `string` in the `if` statement.'
 
-    type_id_error = get_request_method('create').find('unitary_operator', lambda node: node.target.value == 'type_id')
-    type_id_elif_exists = type_id_error is not None and type_id_error.parent is not None and type_id_error.parent.type == 'elif'
+    type_id_error = get_conditional(get_request_method('edit'), ['not:request.form["type_id"]', 'request.form["type_id"]:is:None', 'request.form["type_id"]:==:None', 'request.form["type_id"]:is:""', 'request.form["type_id"]:==:""', 'not:type_id', 'type_id:is:None', 'type_id:==:None', 'type_id:is:""', 'type_id:==:""'], 'elif', True)
+    type_id_elif_exists = type_id_error is not None
     assert type_id_elif_exists, \
         'Do you have a nested `if` statement that tests if `type` is `not` empty.'
     type_id_error_message = type_id_error.parent.find('assign', lambda node: node.target.value == 'error')
@@ -546,7 +547,7 @@ def test_edit_route_validate_data_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
 
-    title_error = get_if_statements(get_request_method('edit'), ['not:request.form["title"]', 'request.form["title"]:is:None', 'request.form["title"]:==:None', 'request.form["title"]:is:""', 'request.form["title"]:==:""'], True)
+    title_error = get_conditional(get_request_method('edit'), ['not:request.form["title"]', 'request.form["title"]:is:None', 'request.form["title"]:==:None', 'request.form["title"]:is:""', 'request.form["title"]:==:""'], 'if', True)
     title_if_exists = title_error is not None
     assert title_if_exists, \
         'Do you have a nested `if` statement that tests if `title` is `not` empty.'
@@ -560,9 +561,9 @@ def test_edit_route_validate_data_module2():
 def test_edit_route_update_data_module2():
     assert admin_module_exists, \
         'Have you created the `cms/admin/__init__.py` file?'
+
     error_check = get_request_method('edit').find('comparison', lambda node: \
         'error' in [str(node.first), str(node.second)])
-
     error_check_exists = error_check is not None and error_check.parent.type == 'if' and \
         ((error_check.first.value == 'error' and error_check.second.value == 'None') or \
         (error_check.first.value == 'None' and error_check.second.value == 'error')) and \

@@ -101,7 +101,7 @@ def get_imports(code, value):
     imports = code.find_all('from_import',  lambda node: ''.join(list(node.value.node_list.map(lambda node: str(node)))) == value).find_all('name_as_name')
     return list(imports.map(lambda node: node.value))
 
-def get_if_statements(code, values, nested=False):
+def get_conditional(code, values, type, nested=False):
     def flat(node):
         if node.type == 'comparison':
             return '{}:{}:{}'.format(str(node.first).replace("'", '"'), str(node.value), str(node.second).replace("'", '"'))
@@ -110,7 +110,7 @@ def get_if_statements(code, values, nested=False):
 
     nodes = code.value if nested else code
     for value in values:
-        final_node = nodes.find_all('if').find(['comparison', 'unitary_operator'], lambda node: flat(node) == value)
+        final_node = nodes.find_all(type).find(['comparison', 'unitary_operator'], lambda node: flat(node) == value)
         if final_node is not None:
             return final_node
     return None
