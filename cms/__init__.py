@@ -2,11 +2,14 @@ from flask import Flask, render_template, abort
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 
+## Application Configuration
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///{}/{}'.format(app.root_path, 'content.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'b2de7FkqvkMyqzNFzxCkgnPKIGP6i4Rc'
+#!
 
+## Models
 db = SQLAlchemy(app)
 
 class Type(db.Model):
@@ -34,13 +37,15 @@ class User(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     firstname = db.Column(db.String(100), unique=True, nullable=False)
     lastname = db.Column(db.String(100), unique=True, nullable=False)
+#!
 
+## Admin Routes
 def requested_type(type):
     types = [row.name for row in Type.query.all()]
     return True if type in types else False
 
-@app.route('/', defaults = {'type': 'page'})
-@app.route('/<type>')
+@app.route('/admin/', defaults={'type': 'page'})
+@app.route('/admin/<type>')
 def content(type):
     if requested_type(type):
         content = Content.query.join(Type).filter(Type.name == type)
@@ -65,7 +70,9 @@ def users():
 def settings():
     settings = Setting.query.all()
     return render_template('admin/settings.html', title='Settings', settings=settings)
+#!
 
+## Front-end Route
 @app.template_filter('pluralize')
 def pluralize(string, end=None, rep=''):
     if end and string.endswith(end):
@@ -73,12 +80,13 @@ def pluralize(string, end=None, rep=''):
     else:
         return string + 's'
 
-@app.route('/', defaults = {'slug': 'home'})
+@app.route('/', defaults={'slug': 'home'})
 @app.route('/<slug>')
 def index(slug):
     titles = Content.query.with_entities(Content.slug, Content.title).join(Type).filter(Type.name == 'page')
     content = Content.query.filter(Content.slug == slug).first_or_404()
     return render_template('index.html', titles=titles, content=content)
+#!
 
 if __name__ == "__main__":
     app.run(debug=True)
