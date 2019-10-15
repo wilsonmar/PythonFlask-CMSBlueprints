@@ -1,10 +1,14 @@
+## Imports
 import pytest
+import re
 
 from pathlib import Path
 from redbaron import RedBaron
 
 from tests.utils import template_data, template_functions, get_imports
+#!
 
+## Paths
 main_module = Path.cwd() / 'cms' / '__init__.py'
 main_module_exists = Path.exists(main_module) and Path.is_file(main_module)
 
@@ -16,7 +20,9 @@ module_exists = Path.exists(module) and Path.is_file(module)
 
 models = admin / 'models.py'
 models_exists = Path.exists(models) and Path.is_file(models)
+#!
 
+## Module Functions
 def models_code():
     with open(models.resolve(), 'r') as models_source_code:
         return RedBaron(models_source_code.read())
@@ -28,7 +34,9 @@ def module_code():
 def main_module_code():
     with open(main_module.resolve(), 'r') as main_module_source_code:
         return RedBaron(main_module_source_code.read())
+#!
 
+## Tests
 @pytest.mark.test_admin_blueprint_folder_structure_module1
 def test_admin_blueprint_folder_structure_module1():
     assert admin_exists, \
@@ -255,10 +263,8 @@ def test_admin_blueprint_imports_module1():
     assert name_as_name_user, \
         'Are you importing the `User` model class from `cms.admin.models` in `cms/admin/__init__.py`?'
 
-
 @pytest.mark.test_admin_blueprint_move_routes_module1
 def test_admin_blueprint_move_routes_module1():
-
     assert admin_exists, \
         'Have you created the `admin` blueprint folder?'
     assert module_exists, \
@@ -266,75 +272,46 @@ def test_admin_blueprint_move_routes_module1():
     assert main_module_exists, \
         'Have do you have an `__init__.py` file in the `cms` application folder?'
 
-    requested_type = module_code().find('def', name='requested_type') is not None
+    methods = list(module_code().find_all('def').map(lambda node: node.name))
+
+    requested_type = 'requested_type' in methods
     assert requested_type, \
         'Did you move the `requested_type` function from `cms/__init__.py` to `cms/admin/__init__.py`?'
-
-    content_route = module_code().find('def', name='content')
-    content_route_exists = content_route is not None
+    content_route_exists = 'content' in methods
     assert content_route_exists, \
         'Did you move the `user` function from `cms/__init__.py` to `cms/admin/__init__.py`?'
-    content_decorators = content_route.find_all('dotted_name')
-    content_decorator_count = len(content_decorators) == 2
-    assert content_decorator_count, \
-        'Did you move the `settings` route decorators to `cms/admin/__init__.py`?'
-    content_blueprint_route1 = str(content_decorators[0]) == 'admin_bp.route'
-    content_blueprint_route2 = str(content_decorators[1]) == 'admin_bp.route'
-    assert content_blueprint_route1, \
-        'Have you changed the `@app` decorator to `@admin_ap` on the `content` function?'
-    assert content_blueprint_route2, \
-        'Have you changed the `@app` decorator to `@admin_ap` on the `content` function?'
-
-    create_route = module_code().find('def', name='create')
-    create_route_exists = create_route is not None
+    create_route_exists = 'create' in methods
     assert create_route_exists, \
         'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
-    create_decorators = create_route.find_all('dotted_name')
-    create_decorator_count = len(create_decorators) == 1
-    assert create_decorator_count, \
-        'Did you move the `settings` route decorators to `cms/admin/__init__.py`?'
-    create_blueprint_routes = str(create_decorators[0]) == 'admin_bp.route'
-    assert create_blueprint_routes, \
-        'Have you changed the `@app` decorator to `@admin_ap` on the `create` function?'
-
-    users_route = module_code().find('def', name='users')
-    users_route_exists = users_route is not None
+    users_route_exists = 'users' in methods
     assert users_route_exists, \
         'Did you move the `user` function from `__init__.py` to `cms/admin/__init__.py`?'
-    users_decorators = users_route.find_all('dotted_name')
-    users_decorator_count = len(users_decorators) == 1
-    assert users_decorator_count, \
-        'Did you move the `settings` route decorators to `cms/admin/__init__.py`?'
-    users_blueprint_routes = str(users_decorators[0]) == 'admin_bp.route'
-    assert users_blueprint_routes, \
-        'Have you changed the `@app` decorator to `@admin_ap` on the `users` function?'
-
-    settings_route = module_code().find('def', name='settings')
-    settings_route_exists = settings_route is not None
+    settings_route_exists = 'settings' in methods
     assert settings_route_exists, \
         'Did you move the `settings` function from `__init__.py` to `cms/admin/__init__.py`?'
-    settings_decorators = settings_route.find_all('dotted_name')
-    settings_decorator_count = len(settings_decorators) == 1
-    assert settings_decorator_count, \
-        'Did you move the `settings` route decorators to `cms/admin/__init__.py`?'
-    settings_blueprint_routes = str(settings_decorators[0]) == 'admin_bp.route'
-    assert settings_blueprint_routes, \
-        'Have you changed the `@app` decorator to `@admin_ap` on the `settings` function?'
 
-    def_content = main_module_code().find('def', name='content') is None
-    assert def_content, \
+    decorators = list(set(module_code().find_all('decorator').map(lambda node: node.value.value[0].value)))
+    decorators_changed = 'app' not in decorators
+    assert decorators_changed, \
+        'Have you changed the `@app` decorator to `@admin_ap` on all routes?'
+
+    patterns = list(module_code().find_all('decorator').map(lambda node: re.sub(r'(\'|")', '', str(node.find('call_argument')))))
+    patterns_changed = len([s for s in patterns if "/admin" in s]) == 0
+    assert patterns_changed, \
+            'Have you removed the `/admin` URL prefix from each route?'
+
+    main_methods = list(main_module_code().find_all('def').map(lambda node: node.name))
+    main_content_removed = 'content' not in main_methods
+    assert main_content_removed, \
         'Did you remove the `content` function from `__init__.py`?'
-
-    def_create = main_module_code().find('def', name='create') is None
-    assert def_create, \
+    main_create_removed = 'create' not in main_methods
+    assert main_create_removed, \
         'Did you remove the `create` function from `__init__.py`?'
-
-    def_users = main_module_code().find('def', name='users') is None
-    assert def_users, \
+    main_users_removed = 'users' not in main_methods
+    assert main_users_removed, \
         'Did you remove the `users` function from `__init__.py`?'
-
-    def_settings = main_module_code().find('def', name='settings') is None
-    assert def_settings, \
+    main_settings_removed = 'settings' not in main_methods
+    assert main_settings_removed, \
         'Did you remove the `settings` function from `__init__.py`?'
 
 @pytest.mark.test_cms_module_register_blueprint_module1
@@ -452,3 +429,4 @@ def test_admin_blueprint_template_folder_module1():
     settings_link_exists = 'admin.settings:' in links
     assert settings_link_exists, \
         'Have you updated the `url_for` for `Settings` in `admin/templates/admin/layout.html`?'
+#!

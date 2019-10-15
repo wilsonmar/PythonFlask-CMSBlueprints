@@ -1,3 +1,4 @@
+## Imports
 import pytest
 import re
 
@@ -5,7 +6,9 @@ from pathlib import Path
 from redbaron import RedBaron
 
 from tests.utils import *
+#!
 
+## Paths
 admin = Path.cwd() / 'cms' / 'admin'
 admin_module = admin / '__init__.py'
 admin_templates = admin / 'templates' / 'admin'
@@ -18,7 +21,9 @@ admin_templates_exists = Path.exists(admin_templates) and Path.is_dir(admin_temp
 content_form_exists = Path.exists(content_form) and Path.is_file(content_form)
 content_exists = Path.exists(content_path) and Path.is_file(content_path)
 content_form_template = template_data('content_form')
+#!
 
+## Module Functions
 def admin_module_code():
     with open(admin_module.resolve(), 'r') as admin_module_source_code:
         return RedBaron(admin_module_source_code.read())
@@ -71,7 +76,9 @@ def get_form_data(route, name):
 
     assert right or right_get, \
         'Are you setting the `{}` varaible to the correct form data?'.format(name)
+#!
 
+## Tests
 @pytest.mark.test_edit_route_module3
 def test_edit_route_module3():
     assert admin_module_exists, \
@@ -100,7 +107,7 @@ def test_edit_route_module3():
         node.value[1].type == 'dot' and \
         node.value[2].value == 'route' and \
         node.parent.call.type == 'call' and \
-        bool(re.search('/admin/edit/<(int:)?id>', node.parent.call.value[0].value.value))
+        bool(re.search('/edit/<(int:)?id>', node.parent.call.value[0].value.value))
         ) is not None
     assert edit_decorator, \
         'Have you add a route decorator to the `edit` route function? Are you passing the correct route pattern?'
@@ -331,3 +338,4 @@ def test_edit_route_update_data_module3():
         node.value[1].value[0].value.value == 'error') is not None
     assert flash_exists, \
         'Are you flashing an `error` at the end of the `request.method` `if`?'
+#!
