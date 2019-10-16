@@ -247,6 +247,13 @@ def test_edit_route_form_data_module3():
     except:
         assert False, 'Are you setting all proprties of the `content` object correctly?'
 
+    import_datetime = admin_module_code().find('name', lambda node: \
+        node.value == 'datetime' and \
+        node.parent.type == 'from_import' and \
+        node.parent.targets[0].value == 'datetime') is not None
+    assert import_datetime, \
+        'Are you importing `datetime` from `datetime`?'
+
     content_updated_at = get_request_method('edit').find('assign', lambda node: \
         str(node.target) == 'content.updated_at')
     content_updated_at_exists = content_updated_at is not None
@@ -260,7 +267,7 @@ def test_edit_route_form_data_module3():
     assert right, \
         'Are you setting `content.updated_at` to the current date?'
 
-    error = get_request_method('create').find('assign', lambda node: \
+    error = get_request_method('edit').find('assign', lambda node: \
         node.target.value == 'error')
     error_exists = error is not None
     assert error_exists, \
@@ -332,7 +339,7 @@ def test_edit_route_update_data_module3():
     assert url_type, \
         'Are you passing a `type` keyword argument set to `type.name` to the `url_for()` function?'
 
-    flash_exists = get_request_method('create').find('atomtrailers', lambda node: \
+    flash_exists = get_request_method('edit').find('atomtrailers', lambda node: \
         node.value[0].value == 'flash' and \
         node.value[1].type == 'call' and \
         node.value[1].value[0].value.value == 'error') is not None
