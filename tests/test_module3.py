@@ -331,9 +331,9 @@ def test_edit_route_update_data_module3():
 
     url_for_args = list(url_for_call.find_all('call_argument').map(lambda node: \
         str(node.target) + ':' + str(node.value).replace("'", '"')))
-    url_content = 'None:"content"' in url_for_args
+    url_content = 'None:"admin.content"' in url_for_args
     assert url_content, \
-        "Are you passing the `'content'` to the `url_for()` function?"
+        "Are you passing the `'admin.content'` to the `url_for()` function?"
 
     url_type = 'type:type.name' in url_for_args
     assert url_type, \
