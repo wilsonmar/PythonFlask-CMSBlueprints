@@ -126,7 +126,7 @@ Finally, open `cms/admin/templates/admin/layout.html` and add `admin.` to the be
 ## Template - Add Form Controls
 @pytest.mark.test_template_add_from_controls_module2
 
-In this module we will make it possible to create and edit content in our CMS. We'll start by adding form controls to our HTML template. 
+In this module we will make it possible to create content in our CMS. We'll start by adding form controls to our HTML template.
 
 Open the `content_form.html` file that can now be found in the `templates` folder of the `admin` blueprint. This template contains a `<form>` element with several empty `<div>`s. Each one having a class of `control`. Let's add a form control to each one.
 
@@ -254,7 +254,7 @@ To hook everything together, open `content.html` and find the `Edit` anchor elem
 
 Return back to the `cms/admin/__init__.py` file. Below the query statements, add an `if` that checks if the request method is _POST_. If so, assign all properties of the `content` object the correct form data. *Hint: content.title = request.form\['title'\]*. 
 
-There are no fields in our form for the `content.updated_at` property. Below the existing imports import `datetime` from `datetime`. Then assign content.updated_at the current date with a call to `datetime.utcnow()`. 
+There are no fields in our form for the `content.updated_at` property. Below the existing imports, import `datetime` from `datetime`. Then assign `content.updated_at` the current date with a call to `datetime.utcnow()`. 
 
 You should end up with 5 assignment statements that assign new values to the properties of the `content` object.
 
