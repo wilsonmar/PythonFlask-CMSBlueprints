@@ -157,6 +157,10 @@ def test_template_buttons_module2():
     assert cancel_exists, \
         'Have you added an `<a>` with the correct attributes to the second `is-grouped` control `<div>`?'
 
+    a_contents_len = len(cancel_el[0].contents) >= 1 
+    assert a_contents_len, \
+            'Does your cancel link contain the word `Cancel`?'
+
     a_contents = (cancel_el[0].contents[0]).lower() == 'cancel'
     assert a_contents, \
         'Does your cancel link contain the word `Cancel`?'
