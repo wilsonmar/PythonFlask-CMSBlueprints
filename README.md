@@ -41,5 +41,5 @@ pytest
 You should see that all the tests are failing. This is good! We’ll be fixing these tests once we jump into the build step. Every time you want to check your work locally you can type that command, and it will report the status of every task in the project.
 
 ## Previewing Your Work
-You can preview your work by running `flask run` in the root of your fork. Then visit `http://localhost:5000` in your browser. You will see a working preview after completing the first module.
+You can preview your work by running `flask run` in the root of your fork. Then visit `http://localhost:5000/admin` in your browser. You will see a working preview after completing the first module.
 *Note: On Windows you may need to run `python -m flask run` instead of `flask run`.*
