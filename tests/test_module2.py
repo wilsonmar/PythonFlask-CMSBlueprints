@@ -24,6 +24,9 @@ content_form_template = template_data('content_form')
 #!
 
 ## Module Functions
+def rq(string):
+    return re.sub(r'(\'|")', '', str(string))
+
 def admin_module_code():
     with open(admin_module.resolve(), 'r') as admin_module_source_code:
         return RedBaron(admin_module_source_code.read())
@@ -52,6 +55,23 @@ def get_request_method(route, parent=True):
     return request_method.parent if parent else request_method
 
 def get_form_data(route, name):
+    index = list(get_request_method(route).find_all('atomtrailers', lambda node: \
+        node.parent.type == 'assignment' and \
+        node.value[0].value == 'request' and \
+        node.value[1].value == 'form' and \
+        node.value[2].type == 'getitem').map(lambda node: rq(node.value[2].value)))
+
+    get = list(get_request_method(route).find_all('atomtrailers', lambda node: \
+        node.value[0].value == 'request' and \
+        node.value[1].value == 'form' and \
+        node.value[2].value == 'get' and \
+        node.value[3].type == 'call').map(lambda node: rq(node.value[3].value[0].value)))
+
+    diff = list(set(index + get) - {'slug', 'type_id', 'body', 'title'})
+    diff_exists = len(diff) == 0
+    message = 'You have extra `request.form` statements. You can remove those for these varaibles {}'.format(diff)
+    assert diff_exists, message
+
     assignment = get_request_method(route).find('assign', lambda node: \
         str(node.target) == name)
     assignment_exists = assignment is not None
