@@ -236,21 +236,21 @@ def test_create_route_validate_data_module2():
 
     title_if_exists = title_error is not None
     assert title_if_exists, \
-        'Do you have a nested `if` statement that tests if `title` is `not` empty.'
+        'Do you have a nested `if` statement that tests if `title` is `not` empty?'
     title_error_message = title_error.parent.find('assign', lambda node: node.target.value == 'error')
     title_error_message_exists = title_error_message is not None and title_error_message.value.type == 'string'
     assert title_error_message_exists, \
-        'Are you setting the `error` variable to the appropriate `string` in the `if` statement.'
+        'Are you setting the `error` variable to the appropriate `string` in the `if` statement?'
 
     type_id_error = get_conditional(get_request_method('create'), ['not:request.form["type_id"]', 'request.form["type_id"]:is:None', 'request.form["type_id"]:==:None', 'request.form["type_id"]:is:""', 'request.form["type_id"]:==:""', 'not:type_id', 'type_id:is:None', 'type_id:==:None', 'type_id:is:""', 'type_id:==:""'], 'elif', True)
 
     type_id_elif_exists = type_id_error is not None
     assert type_id_elif_exists, \
-        'Do you have a nested `if` statement that tests if `type` is `not` empty.'
+        'Do you have an `elif` statement that tests if `type` is `not` empty?'
     type_id_error_message = type_id_error.parent.find('assign', lambda node: node.target.value == 'error')
     type_id_error_message_exists = type_id_error_message is not None and type_id_error_message.value.type == 'string'
     assert type_id_error_message_exists, \
-        'Are you setting the `error` variable to the appropriate `string` in the `elif` statement.'
+        'Are you setting the `error` variable to the appropriate `string` in the `elif` statement?'
 
 @pytest.mark.test_create_route_insert_data_module2
 def test_create_route_insert_data_module2():
